@@ -1,15 +1,15 @@
 # Nixpacks build config for Railway.
 #
-# CRITICAL: pin Node 24. Nixpacks otherwise defaults to an older Node that does
-# not have the stable built-in `node:sqlite` module this app uses (needs >=22.5).
+# We deliberately do NOT override the install/build phases here. Nixpacks
+# auto-detects the Node project and runs `npm ci` + `npm run build` with its own
+# cache-aware logic; overriding them caused an EBUSY error because a manual
+# `npm ci` tried to remove the cache dir that Nixpacks mounts as a build volume.
+#
+# Node version is pinned to 24 via `.node-version` (Nixpacks reads it) — required
+# because the app uses the stable built-in `node:sqlite` module (needs >=22.5).
+
 [phases.setup]
 nixPkgs = ["nodejs_24"]
-
-[phases.install]
-cmds = ["npm ci"]
-
-[phases.build]
-cmds = ["npm run build"]
 
 [start]
 cmd = "npm start"
