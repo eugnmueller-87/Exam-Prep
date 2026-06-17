@@ -7,3 +7,4 @@ data.db
 .env.local
 .DS_Store
 *.log
+*.db-journal
