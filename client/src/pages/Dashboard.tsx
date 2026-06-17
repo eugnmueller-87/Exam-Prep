@@ -34,7 +34,7 @@ export default function Dashboard() {
     queryFn: () => apiRequest("GET", "/api/stats/overview"),
   });
 
-  const { data: domains, isLoading: loadingDomains } = useQuery({
+  const { data: domains } = useQuery({
     queryKey: ["/api/stats/domains"],
     queryFn: () => apiRequest("GET", "/api/stats/domains"),
   });
@@ -44,7 +44,7 @@ export default function Dashboard() {
     queryFn: () => apiRequest("GET", "/api/stats/weak-topics"),
   });
 
-  const { data: recentSessions, isLoading: loadingSessions } = useQuery({
+  const { data: recentSessions } = useQuery({
     queryKey: ["/api/sessions/recent"],
     queryFn: () => apiRequest("GET", "/api/sessions/recent"),
   });
@@ -63,7 +63,10 @@ export default function Dashboard() {
             </p>
             <div className="flex flex-wrap gap-2 mt-3">
               {Object.entries(DOMAIN_LABELS).map(([key, label]) => (
-                <span key={key} className={`text-xs px-2 py-1 rounded-md border font-medium ${DOMAIN_COLORS[key]}`}>
+                <span
+                  key={key}
+                  className={`text-xs px-2 py-1 rounded-md border font-medium ${DOMAIN_COLORS[key]}`}
+                >
                   {label} <span className="opacity-70">({DOMAIN_WEIGHTS[key]})</span>
                 </span>
               ))}
@@ -77,7 +80,11 @@ export default function Dashboard() {
               </Button>
             </Link>
             <Link href="/study" className="flex-1 sm:flex-none">
-              <Button variant="secondary" data-testid="btn-start-study" className="gap-2 w-full sm:w-auto min-h-[44px]">
+              <Button
+                variant="secondary"
+                data-testid="btn-start-study"
+                className="gap-2 w-full sm:w-auto min-h-[44px]"
+              >
                 <BookOpen className="w-4 h-4" />
                 Study
               </Button>
@@ -95,13 +102,19 @@ export default function Dashboard() {
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <StatCard icon={Target} label="Questions Answered" value={overview?.totalAttempted ?? 0} />
+          <StatCard
+            icon={Target}
+            label="Questions Answered"
+            value={overview?.totalAttempted ?? 0}
+          />
           <StatCard
             icon={TrendingUp}
             label="Overall Accuracy"
-            value={overview?.totalAttempted > 0
-              ? `${Math.round((overview.totalCorrect / overview.totalAttempted) * 100)}%`
-              : "—"}
+            value={
+              overview?.totalAttempted > 0
+                ? `${Math.round((overview.totalCorrect / overview.totalAttempted) * 100)}%`
+                : "—"
+            }
             accent={
               overview?.totalAttempted > 0
                 ? Math.round((overview.totalCorrect / overview.totalAttempted) * 100) >= 70
@@ -117,7 +130,9 @@ export default function Dashboard() {
             value={overview?.totalSessions > 0 ? `${overview.avgScore}%` : "—"}
             accent={
               overview?.totalSessions > 0
-                ? overview.avgScore >= 70 ? "green" : "orange"
+                ? overview.avgScore >= 70
+                  ? "green"
+                  : "orange"
                 : undefined
             }
           />
@@ -156,7 +171,9 @@ export default function Dashboard() {
               );
             })}
             {!hasData && (
-              <p className="text-xs text-muted-foreground pt-2">Complete a quiz to see domain stats.</p>
+              <p className="text-xs text-muted-foreground pt-2">
+                Complete a quiz to see domain stats.
+              </p>
             )}
           </CardContent>
         </Card>
@@ -172,19 +189,31 @@ export default function Dashboard() {
           <CardContent>
             {loadingWeak ? (
               <div className="space-y-2">
-                {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-10" />)}
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={i} className="h-10" />
+                ))}
               </div>
             ) : weakTopics?.length > 0 ? (
               <div className="space-y-2">
                 {weakTopics.slice(0, 5).map((topic: any, i: number) => (
-                  <div key={i} data-testid={`weak-topic-${i}`} className="flex items-center justify-between p-2 rounded-lg bg-secondary/50">
+                  <div
+                    key={i}
+                    data-testid={`weak-topic-${i}`}
+                    className="flex items-center justify-between p-2 rounded-lg bg-secondary/50"
+                  >
                     <div>
                       <p className="text-sm font-medium leading-tight">{topic.topic}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{DOMAIN_LABELS[topic.domain]}</p>
+                      <p className="text-xs text-muted-foreground capitalize">
+                        {DOMAIN_LABELS[topic.domain]}
+                      </p>
                     </div>
                     <Badge
                       variant="outline"
-                      className={topic.accuracy < 50 ? "border-red-500/40 text-red-400" : "border-orange-500/40 text-orange-400"}
+                      className={
+                        topic.accuracy < 50
+                          ? "border-red-500/40 text-red-400"
+                          : "border-orange-500/40 text-orange-400"
+                      }
                     >
                       {topic.accuracy}%
                     </Badge>
@@ -192,7 +221,9 @@ export default function Dashboard() {
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-muted-foreground">Complete quizzes to identify weak areas.</p>
+              <p className="text-xs text-muted-foreground">
+                Complete quizzes to identify weak areas.
+              </p>
             )}
           </CardContent>
         </Card>
@@ -215,13 +246,19 @@ export default function Dashboard() {
                       className="flex items-center justify-between p-2.5 rounded-lg bg-secondary/40 hover:bg-secondary transition-colors cursor-pointer"
                     >
                       <div className="flex items-center gap-3">
-                        <span className={`text-xs px-1.5 py-0.5 rounded font-medium capitalize border ${DOMAIN_COLORS[s.domain || "plan"] ?? "text-muted-foreground border-border"}`}>
+                        <span
+                          className={`text-xs px-1.5 py-0.5 rounded font-medium capitalize border ${DOMAIN_COLORS[s.domain || "plan"] ?? "text-muted-foreground border-border"}`}
+                        >
                           {s.domain ? DOMAIN_LABELS[s.domain] : "All Domains"}
                         </span>
-                        <span className="text-sm">{s.correctCount}/{s.totalQuestions} correct</span>
+                        <span className="text-sm">
+                          {s.correctCount}/{s.totalQuestions} correct
+                        </span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className={`text-sm font-semibold ${score >= 70 ? "text-emerald-400" : "text-orange-400"}`}>
+                        <span
+                          className={`text-sm font-semibold ${score >= 70 ? "text-emerald-400" : "text-orange-400"}`}
+                        >
                           {score}%
                         </span>
                         <span className="text-xs text-muted-foreground">

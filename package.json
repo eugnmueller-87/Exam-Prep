@@ -3,11 +3,19 @@
   "version": "1.0.0",
   "license": "MIT",
   "type": "module",
+  "engines": {
+    "node": ">=22.5.0"
+  },
   "scripts": {
-    "dev": "NODE_ENV=development tsx server/index.ts",
+    "dev": "cross-env NODE_ENV=development tsx server/index.ts",
     "build": "tsx script/build.ts",
-    "start": "NODE_ENV=production node dist/index.cjs",
-    "check": "tsc",
+    "start": "cross-env NODE_ENV=production node dist/index.cjs",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run typecheck && npm run lint && npm run format:check",
     "db:push": "drizzle-kit push"
   },
   "dependencies": {
@@ -76,6 +84,7 @@
     "zod-validation-error": "^3.4.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.4",
     "@tailwindcss/typography": "^0.5.15",
     "@tailwindcss/vite": "^4.1.18",
     "@types/express": "^5.0.0",
@@ -88,12 +97,20 @@
     "@types/ws": "^8.5.13",
     "@vitejs/plugin-react": "^4.7.0",
     "autoprefixer": "^10.4.20",
+    "cross-env": "^7.0.3",
     "drizzle-kit": "^0.31.8",
     "esbuild": "^0.25.0",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^9.1.2",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.26",
+    "globals": "^15.15.0",
     "postcss": "^8.4.47",
+    "prettier": "^3.8.4",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.20.5",
     "typescript": "5.6.3",
+    "typescript-eslint": "^8.61.1",
     "vite": "^7.3.0"
   },
   "optionalDependencies": {

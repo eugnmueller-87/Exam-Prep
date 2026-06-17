@@ -64,22 +64,32 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family:
+      "Inter",
+      system-ui,
+      -apple-system,
+      sans-serif;
     font-size: 15px;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Inter', system-ui, sans-serif;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Inter", system-ui, sans-serif;
     font-weight: 600;
     line-height: 1.25;
     letter-spacing: -0.01em;
   }
 
-  code, .mono {
-    font-family: 'JetBrains Mono', 'Courier New', monospace;
+  code,
+  .mono {
+    font-family: "JetBrains Mono", "Courier New", monospace;
   }
 }
 
@@ -100,14 +110,26 @@
 }
 
 /* Domain color tokens */
-.domain-plan { --domain-color: #3B82F6; }
-.domain-design { --domain-color: #8B5CF6; }
-.domain-deploy { --domain-color: #10B981; }
+.domain-plan {
+  --domain-color: #3b82f6;
+}
+.domain-design {
+  --domain-color: #8b5cf6;
+}
+.domain-deploy {
+  --domain-color: #10b981;
+}
 
 /* Difficulty tokens */
-.diff-easy { color: #10B981; }
-.diff-medium { color: #F59E0B; }
-.diff-hard { color: #EF4444; }
+.diff-easy {
+  color: #10b981;
+}
+.diff-medium {
+  color: #f59e0b;
+}
+.diff-hard {
+  color: #ef4444;
+}
 
 /* Answer states */
 .answer-correct {
@@ -122,7 +144,9 @@
 
 /* Progress bar animation */
 @keyframes progress-in {
-  from { width: 0; }
+  from {
+    width: 0;
+  }
 }
 .progress-animate {
   animation: progress-in 0.4s ease-out;
@@ -130,8 +154,14 @@
 
 /* Fade in */
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .fade-in {
   animation: fade-in 0.25s ease-out;
@@ -139,8 +169,14 @@
 
 /* Score reveal */
 @keyframes scale-in {
-  from { transform: scale(0.85); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 .scale-in {
   animation: scale-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);

@@ -1,0 +1,32 @@
+# Render Blueprint — deploys the AB-100 Exam Prep tool as a public web service.
+#
+# One-time setup (see DEPLOY.md):
+#   1. Push this repo to GitHub (done).
+#   2. On https://render.com → New → Blueprint → connect this repo.
+#   3. Render reads this file and provisions the service automatically.
+#
+# Result: a permanent public HTTPS URL (e.g. https://ab100-exam-prep.onrender.com)
+# you can open from an iPad anywhere — no PC required, even while travelling.
+
+services:
+  - type: web
+    name: ab100-exam-prep
+    runtime: node
+    plan: free
+    region: frankfurt # closest to the user (Germany); change if desired
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    autoDeploy: true # redeploy automatically on every push to main
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: NODE_ENV
+        value: production
+      # Store the SQLite file on the mounted persistent disk so quiz history
+      # survives restarts and redeploys.
+      - key: DATABASE_PATH
+        value: /var/data/data.db
+    disk:
+      name: data
+      mountPath: /var/data
+      sizeGB: 1

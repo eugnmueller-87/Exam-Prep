@@ -1,10 +1,16 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ChevronDown, ChevronUp, BookOpen, Filter } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -62,7 +68,7 @@ export default function Study() {
   }, {});
 
   function toggleReveal(id: number) {
-    setRevealedAnswers(prev => {
+    setRevealedAnswers((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
@@ -76,12 +82,17 @@ export default function Study() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
           <h1 className="text-xl font-semibold mb-1">Study Mode</h1>
-          <p className="text-muted-foreground text-sm">Browse all questions by topic. Reveal answers when you're ready.</p>
+          <p className="text-muted-foreground text-sm">
+            Browse all questions by topic. Reveal answers when you're ready.
+          </p>
         </div>
 
         <div className="flex gap-2">
           <Select value={domain} onValueChange={setDomain}>
-            <SelectTrigger data-testid="study-filter-domain" className="flex-1 sm:w-44 min-h-[44px]">
+            <SelectTrigger
+              data-testid="study-filter-domain"
+              className="flex-1 sm:w-44 min-h-[44px]"
+            >
               <Filter className="w-3.5 h-3.5 mr-2 text-muted-foreground shrink-0" />
               <SelectValue placeholder="Domain" />
             </SelectTrigger>
@@ -94,7 +105,10 @@ export default function Study() {
           </Select>
 
           <Select value={difficulty} onValueChange={setDifficulty}>
-            <SelectTrigger data-testid="study-filter-difficulty" className="flex-1 sm:w-36 min-h-[44px]">
+            <SelectTrigger
+              data-testid="study-filter-difficulty"
+              className="flex-1 sm:w-36 min-h-[44px]"
+            >
               <SelectValue placeholder="Difficulty" />
             </SelectTrigger>
             <SelectContent>
@@ -113,7 +127,9 @@ export default function Study() {
 
       {isLoading ? (
         <div className="space-y-4">
-          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)}
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-24 rounded-xl" />
+          ))}
         </div>
       ) : (
         <div className="space-y-6">
@@ -123,7 +139,9 @@ export default function Study() {
               <div key={key}>
                 {/* Topic header */}
                 <div className="flex items-center gap-2 mb-3">
-                  <span className={`text-xs px-2 py-0.5 rounded-md border font-medium ${DOMAIN_COLORS[domainKey]}`}>
+                  <span
+                    className={`text-xs px-2 py-0.5 rounded-md border font-medium ${DOMAIN_COLORS[domainKey]}`}
+                  >
                     {DOMAIN_LABELS[domainKey]}
                   </span>
                   <h2 className="text-sm font-semibold">{topic}</h2>
@@ -137,7 +155,11 @@ export default function Study() {
                     const isRevealed = revealedAnswers.has(q.id);
 
                     return (
-                      <Card key={q.id} data-testid={`study-card-${q.id}`} className="overflow-hidden">
+                      <Card
+                        key={q.id}
+                        data-testid={`study-card-${q.id}`}
+                        className="overflow-hidden"
+                      >
                         {/* Question header — clickable to expand */}
                         <button
                           className="w-full text-left px-4 py-4 min-h-[44px] flex items-start gap-3 hover:bg-secondary/30 active:bg-secondary/40 transition-colors touch-manipulation"
@@ -146,10 +168,15 @@ export default function Study() {
                         >
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1.5">
-                              <Badge variant="outline" className={`text-xs ${DIFF_BADGE[q.difficulty]}`}>
+                              <Badge
+                                variant="outline"
+                                className={`text-xs ${DIFF_BADGE[q.difficulty]}`}
+                              >
                                 {q.difficulty}
                               </Badge>
-                              <span className="text-xs text-muted-foreground truncate">{q.subtopic}</span>
+                              <span className="text-xs text-muted-foreground truncate">
+                                {q.subtopic}
+                              </span>
                             </div>
                             <p className="text-sm font-medium leading-snug">{q.question}</p>
                           </div>
@@ -176,10 +203,14 @@ export default function Study() {
                                 }
                                 return (
                                   <div key={i} className={cls}>
-                                    <span className="font-mono text-xs mr-2 opacity-60">{String.fromCharCode(65 + i)}.</span>
+                                    <span className="font-mono text-xs mr-2 opacity-60">
+                                      {String.fromCharCode(65 + i)}.
+                                    </span>
                                     {opt}
                                     {isRevealed && isCorrect && (
-                                      <span className="ml-2 text-xs text-emerald-400 font-medium">✓ Correct</span>
+                                      <span className="ml-2 text-xs text-emerald-400 font-medium">
+                                        ✓ Correct
+                                      </span>
                                     )}
                                   </div>
                                 );
@@ -199,7 +230,9 @@ export default function Study() {
 
                             {isRevealed && (
                               <div className="mt-3 p-3 rounded-lg bg-secondary/50 border border-border fade-in">
-                                <p className="text-xs font-semibold text-muted-foreground mb-1 uppercase tracking-wide">Why?</p>
+                                <p className="text-xs font-semibold text-muted-foreground mb-1 uppercase tracking-wide">
+                                  Why?
+                                </p>
                                 <p className="text-sm leading-relaxed">{q.explanation}</p>
                               </div>
                             )}

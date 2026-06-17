@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { BarChart3, BookOpen, Brain, Home } from "lucide-react";
+import { BookOpen, Brain, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const nav = [
@@ -18,19 +18,18 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <div className="max-w-5xl mx-auto px-3 sm:px-4 h-14 flex items-center gap-3 sm:gap-6">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 shrink-0">
-            <svg
-              aria-label="AB-100 Prep"
-              viewBox="0 0 32 32"
-              className="w-7 h-7"
-              fill="none"
-            >
+            <svg aria-label="AB-100 Prep" viewBox="0 0 32 32" className="w-7 h-7" fill="none">
               <rect width="32" height="32" rx="7" fill="hsl(210 100% 45%)" />
-              <path d="M9 23L16 9l7 14" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+              <path
+                d="M9 23L16 9l7 14"
+                stroke="white"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
               <path d="M11 19h10" stroke="white" strokeWidth="2" strokeLinecap="round" />
             </svg>
-            <span className="font-semibold text-sm tracking-tight">
-              AB-100 Prep
-            </span>
+            <span className="font-semibold text-sm tracking-tight">AB-100 Prep</span>
             <span className="hidden md:inline text-xs text-muted-foreground font-medium px-1.5 py-0.5 rounded border border-border">
               Agentic AI Architect
             </span>
@@ -48,7 +47,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   "flex items-center justify-center gap-1.5 min-h-[44px] px-3 sm:px-3.5 rounded-md text-sm font-medium transition-colors active:scale-[0.97]",
                   location === href
                     ? "bg-primary/15 text-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary",
                 )}
               >
                 <Icon className="w-[18px] h-[18px]" />
@@ -61,9 +60,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Main */}
       <main className="flex-1">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-5 sm:py-6">
-          {children}
-        </div>
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-5 sm:py-6">{children}</div>
       </main>
     </div>
   );

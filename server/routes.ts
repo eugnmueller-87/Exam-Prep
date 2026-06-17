@@ -20,7 +20,7 @@ export async function registerRoutes(server: Server, app: Express) {
     const questions = storage.getQuestions(
       domain as string | undefined,
       difficulty as string | undefined,
-      limit ? parseInt(limit as string) : undefined
+      limit ? parseInt(limit as string) : undefined,
     );
     res.json(questions);
   });
@@ -67,7 +67,8 @@ export async function registerRoutes(server: Server, app: Express) {
   // PATCH /api/sessions/:id/complete - mark session done
   app.patch("/api/sessions/:id/complete", (req, res) => {
     const { correctCount } = req.body;
-    if (typeof correctCount !== "number") return res.status(400).json({ error: "correctCount required" });
+    if (typeof correctCount !== "number")
+      return res.status(400).json({ error: "correctCount required" });
     const session = storage.completeSession(parseInt(req.params.id), correctCount);
     if (!session) return res.status(404).json({ error: "Not found" });
     res.json(session);
@@ -82,7 +83,7 @@ export async function registerRoutes(server: Server, app: Express) {
     storage.upsertQuestionStats(
       parsed.data.questionId,
       parsed.data.isCorrect === 1,
-      parsed.data.timeSpentMs ?? 0
+      parsed.data.timeSpentMs ?? 0,
     );
     res.json(answer);
   });

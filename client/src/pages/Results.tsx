@@ -68,10 +68,14 @@ export default function Results() {
       {/* Score card */}
       <Card className="text-center">
         <CardContent className="pt-8 pb-7">
-          <div className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center scale-in ${passed ? "bg-emerald-500/20" : "bg-orange-500/20"}`}>
+          <div
+            className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center scale-in ${passed ? "bg-emerald-500/20" : "bg-orange-500/20"}`}
+          >
             <Trophy className={`w-8 h-8 ${passed ? "text-emerald-400" : "text-orange-400"}`} />
           </div>
-          <p className={`text-5xl font-bold mb-1 ${passed ? "text-emerald-400" : "text-orange-400"}`}>
+          <p
+            className={`text-5xl font-bold mb-1 ${passed ? "text-emerald-400" : "text-orange-400"}`}
+          >
             {score}%
           </p>
           <p className="text-muted-foreground text-sm mb-1">
@@ -89,7 +93,11 @@ export default function Results() {
               </Button>
             </Link>
             <Link href="/" className="w-full sm:w-auto">
-              <Button variant="secondary" data-testid="btn-home" className="gap-2 w-full sm:w-auto min-h-[44px]">
+              <Button
+                variant="secondary"
+                data-testid="btn-home"
+                className="gap-2 w-full sm:w-auto min-h-[44px]"
+              >
                 <Home className="w-4 h-4" />
                 Dashboard
               </Button>
@@ -118,7 +126,9 @@ export default function Results() {
                   className="border border-border rounded-lg overflow-hidden"
                 >
                   {/* Question row */}
-                  <div className={`px-4 py-3 flex items-start gap-3 ${a.isCorrect ? "bg-emerald-500/5" : "bg-red-500/5"}`}>
+                  <div
+                    className={`px-4 py-3 flex items-start gap-3 ${a.isCorrect ? "bg-emerald-500/5" : "bg-red-500/5"}`}
+                  >
                     {a.isCorrect ? (
                       <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                     ) : (
@@ -126,7 +136,9 @@ export default function Results() {
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className={`text-xs px-1.5 py-0.5 rounded border font-medium ${DOMAIN_COLORS[q.domain]}`}>
+                        <span
+                          className={`text-xs px-1.5 py-0.5 rounded border font-medium ${DOMAIN_COLORS[q.domain]}`}
+                        >
                           {DOMAIN_LABELS[q.domain]}
                         </span>
                         <span className="text-xs text-muted-foreground">{q.subtopic}</span>
@@ -145,7 +157,8 @@ export default function Results() {
                           <div className="flex items-start gap-2">
                             <XCircle className="w-3.5 h-3.5 text-red-400 shrink-0 mt-0.5" />
                             <p className="text-xs text-red-300">
-                              <span className="font-medium">Your answer:</span> {opts[a.selectedIndex]}
+                              <span className="font-medium">Your answer:</span>{" "}
+                              {opts[a.selectedIndex]}
                             </p>
                           </div>
                         )}

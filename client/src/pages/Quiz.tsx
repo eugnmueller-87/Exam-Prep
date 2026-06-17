@@ -1,13 +1,17 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CheckCircle2, XCircle, ChevronRight, SkipForward, Settings2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { CheckCircle2, XCircle, ChevronRight, SkipForward } from "lucide-react";
 
 type Question = {
   id: number;
@@ -50,7 +54,9 @@ export default function Quiz() {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [revealed, setRevealed] = useState(false);
-  const [answers, setAnswers] = useState<{ questionId: number; selected: number | null; correct: boolean; timeMs: number }[]>([]);
+  const [answers, setAnswers] = useState<
+    { questionId: number; selected: number | null; correct: boolean; timeMs: number }[]
+  >([]);
   const questionStartTime = useRef<number>(Date.now());
 
   const { data: allQuestions, isLoading: loadingQuestions } = useQuery({
@@ -116,8 +122,13 @@ export default function Quiz() {
     setRevealed(true);
     const timeMs = Date.now() - questionStartTime.current;
     const isCorrect = selectedAnswer === currentQuestion.correctIndex;
-    const answerEntry = { questionId: currentQuestion.id, selected: selectedAnswer, correct: isCorrect, timeMs };
-    setAnswers(prev => [...prev, answerEntry]);
+    const answerEntry = {
+      questionId: currentQuestion.id,
+      selected: selectedAnswer,
+      correct: isCorrect,
+      timeMs,
+    };
+    setAnswers((prev) => [...prev, answerEntry]);
 
     if (sessionId) {
       await saveAnswer.mutateAsync({
@@ -134,13 +145,13 @@ export default function Quiz() {
     if (isLast) {
       // Finish quiz
       const allAnswers = [...answers];
-      const correct = allAnswers.filter(a => a.correct).length;
+      const correct = allAnswers.filter((a) => a.correct).length;
       if (sessionId) {
         await completeSession.mutateAsync({ id: sessionId, correct });
         navigate(`/results/${sessionId}`);
       }
     } else {
-      setCurrentIdx(prev => prev + 1);
+      setCurrentIdx((prev) => prev + 1);
       setSelectedAnswer(null);
       setRevealed(false);
       questionStartTime.current = Date.now();
@@ -150,7 +161,7 @@ export default function Quiz() {
   async function handleSkip() {
     const timeMs = Date.now() - questionStartTime.current;
     const answerEntry = { questionId: currentQuestion.id, selected: null, correct: false, timeMs };
-    setAnswers(prev => [...prev, answerEntry]);
+    setAnswers((prev) => [...prev, answerEntry]);
 
     if (sessionId) {
       await saveAnswer.mutateAsync({
@@ -164,13 +175,13 @@ export default function Quiz() {
 
     if (isLast) {
       const allAnswers = [...answers, answerEntry];
-      const correct = allAnswers.filter(a => a.correct).length;
+      const correct = allAnswers.filter((a) => a.correct).length;
       if (sessionId) {
         await completeSession.mutateAsync({ id: sessionId, correct });
         navigate(`/results/${sessionId}`);
       }
     } else {
-      setCurrentIdx(prev => prev + 1);
+      setCurrentIdx((prev) => prev + 1);
       setSelectedAnswer(null);
       setRevealed(false);
       questionStartTime.current = Date.now();
@@ -183,7 +194,9 @@ export default function Quiz() {
       <div className="max-w-xl mx-auto fade-in">
         <div className="mb-6">
           <h1 className="text-xl font-semibold mb-1">Configure Quiz</h1>
-          <p className="text-muted-foreground text-sm">Choose your focus area and difficulty level.</p>
+          <p className="text-muted-foreground text-sm">
+            Choose your focus area and difficulty level.
+          </p>
         </div>
 
         <Card>
@@ -249,15 +262,17 @@ export default function Quiz() {
 
   if (!currentQuestion) return null;
 
-  const progress = ((currentIdx) / questions.length) * 100;
-  const answeredCorrect = answers.filter(a => a.correct).length;
+  const progress = (currentIdx / questions.length) * 100;
+  const answeredCorrect = answers.filter((a) => a.correct).length;
 
   return (
     <div className="max-w-2xl mx-auto fade-in">
       {/* Progress header */}
       <div className="mb-5">
         <div className="flex items-center justify-between mb-2 text-sm text-muted-foreground">
-          <span>Question {currentIdx + 1} of {questions.length}</span>
+          <span>
+            Question {currentIdx + 1} of {questions.length}
+          </span>
           <span>{answeredCorrect} correct so far</span>
         </div>
         <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
@@ -273,17 +288,24 @@ export default function Quiz() {
         <CardContent className="pt-5">
           {/* Meta */}
           <div className="flex flex-wrap items-center gap-2 mb-4">
-            <span className={`text-xs px-2 py-0.5 rounded-md border font-medium ${DOMAIN_COLORS[currentQuestion.domain]}`}>
+            <span
+              className={`text-xs px-2 py-0.5 rounded-md border font-medium ${DOMAIN_COLORS[currentQuestion.domain]}`}
+            >
               {DOMAIN_LABELS[currentQuestion.domain]}
             </span>
             <span className="text-xs text-muted-foreground">{currentQuestion.topic}</span>
-            <span className={`text-xs font-semibold ml-auto capitalize ${DIFF_COLORS[currentQuestion.difficulty]}`}>
+            <span
+              className={`text-xs font-semibold ml-auto capitalize ${DIFF_COLORS[currentQuestion.difficulty]}`}
+            >
               {currentQuestion.difficulty}
             </span>
           </div>
 
           {/* Question text */}
-          <p className="text-base sm:text-[17px] font-medium leading-relaxed mb-5" data-testid="question-text">
+          <p
+            className="text-base sm:text-[17px] font-medium leading-relaxed mb-5"
+            data-testid="question-text"
+          >
             {currentQuestion.question}
           </p>
 
@@ -292,7 +314,8 @@ export default function Quiz() {
             {options.map((opt, i) => {
               const isSelected = selectedAnswer === i;
               const isCorrect = currentQuestion.correctIndex === i;
-              let cls = "w-full text-left p-4 rounded-lg border text-[15px] sm:text-sm leading-relaxed transition-all cursor-pointer active:scale-[0.99] touch-manipulation ";
+              let cls =
+                "w-full text-left p-4 rounded-lg border text-[15px] sm:text-sm leading-relaxed transition-all cursor-pointer active:scale-[0.99] touch-manipulation ";
 
               if (!revealed) {
                 cls += isSelected
@@ -300,7 +323,8 @@ export default function Quiz() {
                   : "border-border bg-secondary/30 hover:border-primary/50 hover:bg-secondary";
               } else {
                 if (isCorrect) cls += "border-emerald-500 bg-emerald-500/10 text-emerald-300";
-                else if (isSelected && !isCorrect) cls += "border-red-500 bg-red-500/10 text-red-300";
+                else if (isSelected && !isCorrect)
+                  cls += "border-red-500 bg-red-500/10 text-red-300";
                 else cls += "border-border bg-secondary/20 text-muted-foreground";
               }
 
@@ -332,9 +356,13 @@ export default function Quiz() {
           {/* Explanation */}
           {revealed && (
             <div className="mt-5 p-4 rounded-lg bg-secondary/50 border border-border fade-in">
-              <p className="text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">Explanation</p>
+              <p className="text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">
+                Explanation
+              </p>
               <p className="text-sm leading-relaxed">{currentQuestion.explanation}</p>
-              <p className="text-xs text-muted-foreground mt-2">Topic: {currentQuestion.subtopic}</p>
+              <p className="text-xs text-muted-foreground mt-2">
+                Topic: {currentQuestion.subtopic}
+              </p>
             </div>
           )}
         </CardContent>

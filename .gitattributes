@@ -1,0 +1,6 @@
+# Normalize line endings: store text as LF in the repo, check out native on Windows.
+* text=auto eol=lf
+
+# Binary / generated files git shouldn't touch.
+*.db binary
+package-lock.json -diff
