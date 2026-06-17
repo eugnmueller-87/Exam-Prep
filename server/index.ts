@@ -5,6 +5,22 @@ import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "node:http";
 
+// Fail fast with a clear message if the runtime Node is too old for the stable
+// built-in `node:sqlite` (needs >= 22.5; flagless/stable from 24). Without this
+// guard an old Node throws a cryptic ERR_UNKNOWN_BUILTIN_MODULE at import time.
+{
+  const [major, minor] = process.versions.node.split(".").map(Number);
+  const ok = major > 22 || (major === 22 && minor >= 5);
+  if (!ok) {
+    console.error(
+      `\n[FATAL] Node ${process.versions.node} is too old. This app needs Node >= 22.5 ` +
+        `(Node 24 recommended) for the built-in node:sqlite module. ` +
+        `Set the platform Node version (engines.node / .nvmrc / .node-version are all pinned to 24).\n`,
+    );
+    process.exit(1);
+  }
+}
+
 const app = express();
 const httpServer = createServer(app);
 
