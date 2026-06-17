@@ -1,4 +1,6 @@
 import { DatabaseSync } from "node:sqlite";
+import os from "node:os";
+import path from "node:path";
 import type {
   Question,
   Session,
@@ -11,8 +13,25 @@ import type {
 
 // Node's built-in SQLite (node:sqlite, stable in Node 22+). No native compiler
 // needed — unlike better-sqlite3 — so it installs and deploys anywhere Node runs.
-const DB_PATH = process.env.DATABASE_PATH || "data.db";
-const sqlite = new DatabaseSync(DB_PATH);
+//
+// Open the DB at DATABASE_PATH (default ./data.db). If that location isn't
+// writable on the host (some PaaS containers have a read-only working dir),
+// fall back to the OS temp dir so the app still boots instead of crashing.
+function openDatabase(): DatabaseSync {
+  const primary = process.env.DATABASE_PATH || "data.db";
+  try {
+    return new DatabaseSync(primary);
+  } catch (err) {
+    const fallback = path.join(os.tmpdir(), "ab100-exam-prep.db");
+    console.error(
+      `[storage] Could not open SQLite DB at "${primary}" (${(err as Error).message}). ` +
+        `Falling back to "${fallback}". Set DATABASE_PATH to a writable path to persist data.`,
+    );
+    return new DatabaseSync(fallback);
+  }
+}
+
+const sqlite = openDatabase();
 
 // Create tables if they don't exist
 sqlite.exec(`
