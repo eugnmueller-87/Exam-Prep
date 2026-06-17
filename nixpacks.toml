@@ -1,0 +1,15 @@
+# Nixpacks build config for Railway.
+#
+# CRITICAL: pin Node 24. Nixpacks otherwise defaults to an older Node that does
+# not have the stable built-in `node:sqlite` module this app uses (needs >=22.5).
+[phases.setup]
+nixPkgs = ["nodejs_24"]
+
+[phases.install]
+cmds = ["npm ci"]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "npm start"

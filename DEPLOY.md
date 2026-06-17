@@ -43,40 +43,64 @@ network can reach it.
 
 ## 2. Public deploy (use the iPad anywhere — including while travelling)
 
-For travel you need a public URL that works without your PC. This repo includes
-a **Render Blueprint** (`render.yaml`) that does this for free.
+For travel you need a public URL that works without your PC. This repo is
+configured for **Railway** (recommended) and **Render** (alternative).
 
-### Steps (one-time, ~5 min — needs your Render login)
+### Option A — Railway (recommended)
 
-1. Go to <https://render.com> and sign up / log in (free, GitHub login works).
-2. Click **New → Blueprint**.
-3. Connect your GitHub and select the **`eugnmueller-87/Exam-Prep`** repo.
-4. Render reads `render.yaml`, shows the service `ab100-exam-prep`, and you
-   click **Apply**.
-5. Wait for the first build (~2–3 min). You'll get a permanent URL like:
+Railway has no forced idle-sleep and supports a persistent volume even on the
+trial, so your quiz history survives restarts. Config files: `railway.json`,
+`nixpacks.toml`, `.node-version` (all pin Node 24, required by `node:sqlite`).
+
+**Steps (one-time, ~3 min — needs your Railway login):**
+
+1. Go to <https://railway.app> and log in.
+2. **New Project → Deploy from GitHub repo → `eugnmueller-87/Exam-Prep`**.
+3. Railway reads `railway.json` + `nixpacks.toml` and builds automatically
+   (`npm ci` → `npm run build` → `npm start`). No env vars are required —
+   `PORT` is injected by Railway and the app reads it.
+4. When the deploy is green, open the service → **Settings → Networking →
+   Generate Domain**. You'll get a public URL like:
 
    ```
-   https://ab100-exam-prep.onrender.com
+   https://exam-prep-production.up.railway.app
    ```
 
-6. Open that on your iPad from anywhere. Optionally **Add to Home Screen** in
-   Safari — the included web-app meta tags make it open full-screen like a
-   native app.
+5. **(Optional, for permanent quiz history)** Add a volume:
+   - Service → **Variables** → add `DATABASE_PATH = /data/data.db`
+   - Service → **Settings → Volumes** → **New Volume**, mount path `/data`.
+     Now your scores persist across restarts and redeploys.
 
-### Notes
+6. Open the URL on your iPad from anywhere. Optionally **Add to Home Screen** in
+   Safari — the web-app meta tags make it open full-screen like a native app.
 
-- **Auto-deploy:** every push to `main` redeploys automatically.
-- **Quiz history** is stored in SQLite on a 1 GB persistent disk (`DATABASE_PATH`
-  points at the mounted disk), so your stats survive restarts and redeploys.
-- **Free-tier sleep:** the free service spins down after ~15 min idle and takes
-  ~30 s to wake on the next request. Fine for personal study use. Upgrade to a
-  paid instance if you want it always-on.
+**Auto-deploy:** every push to `main` redeploys automatically.
 
-### Alternative hosts
+> Without the optional volume, the SQLite file is ephemeral: the 172-question
+> bank always re-seeds on startup (quiz works fine), but personal score history
+> resets when the container restarts.
+
+### Option B — Render (alternative, free)
+
+This repo also includes a **Render Blueprint** (`render.yaml`).
+
+1. Go to <https://render.com> and log in.
+2. **New → Blueprint** → connect GitHub → select **`eugnmueller-87/Exam-Prep`**.
+3. Render reads `render.yaml`, shows service `ab100-exam-prep` → **Apply**.
+4. ~2–3 min later you get a URL like `https://ab100-exam-prep.onrender.com`.
+
+Notes for Render free tier:
+
+- No persistent disk on free (`DATABASE_PATH=/tmp/data.db`) — questions re-seed
+  on startup; score history resets on restart. For permanent history, upgrade to
+  the **starter** plan and uncomment the `disk:` block in `render.yaml`.
+- Free instances sleep after ~15 min idle (~30 s cold start on next request).
+
+### Any other Node host
 
 The app is a standard Node web service (`npm run build` → `npm start`, respects
-`PORT`), so it also runs on Railway, Fly.io, or any Node host. Set
-`DATABASE_PATH` to a writable/persistent location if you want stats to persist.
+`PORT`), so it runs on Fly.io or any Node ≥ 22.5 host. Set `DATABASE_PATH` to a
+writable/persistent location if you want stats to persist.
 
 ---
 

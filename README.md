@@ -53,8 +53,9 @@ session history persist in SQLite (`data.db`, or `DATABASE_PATH` if set).
 See **[DEPLOY.md](DEPLOY.md)** for:
 
 - Running on the same Wi-Fi as your iPad (LAN access)
-- Deploying a public URL (Render Blueprint included) to use the app anywhere,
-  including while travelling
+- Deploying a public URL to use the app anywhere, including while travelling —
+  configured for **Railway** (`railway.json` + `nixpacks.toml`, recommended) and
+  **Render** (`render.yaml`)
 
 ## Quality Checks
 

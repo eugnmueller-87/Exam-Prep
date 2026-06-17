@@ -7,6 +7,14 @@
 #
 # Result: a permanent public HTTPS URL (e.g. https://ab100-exam-prep.onrender.com)
 # you can open from an iPad anywhere — no PC required, even while travelling.
+#
+# NOTE: The free tier does NOT support persistent disks, so the SQLite file
+# lives on the container's ephemeral filesystem. This is fine for this app: the
+# 172-question bank re-seeds automatically on every startup, so the quiz always
+# works. Only your personal score history resets when the free instance restarts
+# (it sleeps after ~15 min idle). To keep history permanently, upgrade the
+# service to a paid "starter" plan and re-add the `disk:` block + set
+# DATABASE_PATH to the mounted path (see the commented block at the bottom).
 
 services:
   - type: web
@@ -22,11 +30,15 @@ services:
         value: "24"
       - key: NODE_ENV
         value: production
-      # Store the SQLite file on the mounted persistent disk so quiz history
-      # survives restarts and redeploys.
+      # Writable path on the ephemeral filesystem (no disk on free tier).
       - key: DATABASE_PATH
-        value: /var/data/data.db
-    disk:
-      name: data
-      mountPath: /var/data
-      sizeGB: 1
+        value: /tmp/data.db
+# ── To make quiz history persistent (paid plan), use this instead ──
+#   plan: starter
+#   envVars:
+#     - key: DATABASE_PATH
+#       value: /var/data/data.db
+#   disk:
+#     name: data
+#     mountPath: /var/data
+#     sizeGB: 1
