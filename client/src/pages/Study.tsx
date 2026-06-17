@@ -42,7 +42,7 @@ export default function Study() {
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [revealedAnswers, setRevealedAnswers] = useState<Set<number>>(new Set());
 
-  const { data: questions, isLoading } = useQuery({
+  const { data: questions, isLoading } = useQuery<Question[]>({
     queryKey: ["/api/questions"],
     queryFn: () => apiRequest("GET", "/api/questions"),
   });
@@ -81,8 +81,8 @@ export default function Study() {
 
         <div className="flex gap-2">
           <Select value={domain} onValueChange={setDomain}>
-            <SelectTrigger data-testid="study-filter-domain" className="w-44">
-              <Filter className="w-3.5 h-3.5 mr-2 text-muted-foreground" />
+            <SelectTrigger data-testid="study-filter-domain" className="flex-1 sm:w-44 min-h-[44px]">
+              <Filter className="w-3.5 h-3.5 mr-2 text-muted-foreground shrink-0" />
               <SelectValue placeholder="Domain" />
             </SelectTrigger>
             <SelectContent>
@@ -94,7 +94,7 @@ export default function Study() {
           </Select>
 
           <Select value={difficulty} onValueChange={setDifficulty}>
-            <SelectTrigger data-testid="study-filter-difficulty" className="w-36">
+            <SelectTrigger data-testid="study-filter-difficulty" className="flex-1 sm:w-36 min-h-[44px]">
               <SelectValue placeholder="Difficulty" />
             </SelectTrigger>
             <SelectContent>
@@ -140,7 +140,7 @@ export default function Study() {
                       <Card key={q.id} data-testid={`study-card-${q.id}`} className="overflow-hidden">
                         {/* Question header — clickable to expand */}
                         <button
-                          className="w-full text-left px-4 py-3.5 flex items-start gap-3 hover:bg-secondary/30 transition-colors"
+                          className="w-full text-left px-4 py-4 min-h-[44px] flex items-start gap-3 hover:bg-secondary/30 active:bg-secondary/40 transition-colors touch-manipulation"
                           onClick={() => setExpandedId(isExpanded ? null : q.id)}
                           data-testid={`study-expand-${q.id}`}
                         >
@@ -189,10 +189,9 @@ export default function Study() {
                             <div className="flex items-center justify-between mt-3">
                               <Button
                                 variant="outline"
-                                size="sm"
                                 data-testid={`btn-reveal-${q.id}`}
                                 onClick={() => toggleReveal(q.id)}
-                                className="text-xs"
+                                className="text-xs w-full sm:w-auto min-h-[44px] sm:min-h-0 sm:h-9"
                               >
                                 {isRevealed ? "Hide Answer" : "Reveal Answer"}
                               </Button>

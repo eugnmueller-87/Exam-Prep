@@ -81,15 +81,15 @@ export default function Results() {
             {passed ? "Passing score (≥70%)" : "Keep practising — aim for 70%+"}
           </p>
 
-          <div className="flex justify-center gap-3 mt-6">
-            <Link href="/quiz">
-              <Button data-testid="btn-retry" className="gap-2">
+          <div className="flex flex-col sm:flex-row sm:justify-center gap-3 mt-6">
+            <Link href="/quiz" className="w-full sm:w-auto">
+              <Button data-testid="btn-retry" className="gap-2 w-full sm:w-auto min-h-[44px]">
                 <RotateCcw className="w-4 h-4" />
                 New Quiz
               </Button>
             </Link>
-            <Link href="/">
-              <Button variant="secondary" data-testid="btn-home" className="gap-2">
+            <Link href="/" className="w-full sm:w-auto">
+              <Button variant="secondary" data-testid="btn-home" className="gap-2 w-full sm:w-auto min-h-[44px]">
                 <Home className="w-4 h-4" />
                 Dashboard
               </Button>

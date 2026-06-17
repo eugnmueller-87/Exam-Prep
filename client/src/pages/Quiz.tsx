@@ -283,7 +283,7 @@ export default function Quiz() {
           </div>
 
           {/* Question text */}
-          <p className="text-base font-medium leading-relaxed mb-5" data-testid="question-text">
+          <p className="text-base sm:text-[17px] font-medium leading-relaxed mb-5" data-testid="question-text">
             {currentQuestion.question}
           </p>
 
@@ -292,7 +292,7 @@ export default function Quiz() {
             {options.map((opt, i) => {
               const isSelected = selectedAnswer === i;
               const isCorrect = currentQuestion.correctIndex === i;
-              let cls = "w-full text-left p-3.5 rounded-lg border text-sm transition-all cursor-pointer ";
+              let cls = "w-full text-left p-4 rounded-lg border text-[15px] sm:text-sm leading-relaxed transition-all cursor-pointer active:scale-[0.99] touch-manipulation ";
 
               if (!revealed) {
                 cls += isSelected
@@ -313,7 +313,7 @@ export default function Quiz() {
                   disabled={revealed}
                 >
                   <div className="flex items-start gap-3">
-                    <span className="w-5 h-5 rounded-full border border-current flex items-center justify-center text-xs shrink-0 mt-0.5">
+                    <span className="w-6 h-6 rounded-full border border-current flex items-center justify-center text-xs shrink-0 mt-px">
                       {revealed && isCorrect ? (
                         <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                       ) : revealed && isSelected && !isCorrect ? (
@@ -341,13 +341,14 @@ export default function Quiz() {
       </Card>
 
       {/* Actions */}
-      <div className="flex gap-2 justify-end">
+      <div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-end pb-4">
         {!revealed && (
           <Button
             variant="ghost"
+            size="lg"
             data-testid="btn-skip"
             onClick={handleSkip}
-            className="gap-1.5 text-muted-foreground"
+            className="gap-1.5 text-muted-foreground w-full sm:w-auto"
           >
             <SkipForward className="w-4 h-4" />
             Skip
@@ -355,17 +356,20 @@ export default function Quiz() {
         )}
         {!revealed ? (
           <Button
+            size="lg"
             data-testid="btn-check-answer"
             onClick={handleReveal}
             disabled={selectedAnswer === null}
+            className="w-full sm:w-auto"
           >
             Check Answer
           </Button>
         ) : (
           <Button
+            size="lg"
             data-testid="btn-next"
             onClick={handleNext}
-            className="gap-1.5"
+            className="gap-1.5 w-full sm:w-auto"
           >
             {isLast ? "See Results" : "Next Question"}
             <ChevronRight className="w-4 h-4" />

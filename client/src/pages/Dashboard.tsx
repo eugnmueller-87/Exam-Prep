@@ -69,15 +69,15 @@ export default function Dashboard() {
               ))}
             </div>
           </div>
-          <div className="flex gap-2 shrink-0">
-            <Link href="/quiz">
-              <Button data-testid="btn-start-quiz" className="gap-2">
+          <div className="flex gap-2 shrink-0 w-full sm:w-auto">
+            <Link href="/quiz" className="flex-1 sm:flex-none">
+              <Button data-testid="btn-start-quiz" className="gap-2 w-full sm:w-auto min-h-[44px]">
                 <Brain className="w-4 h-4" />
                 Start Quiz
               </Button>
             </Link>
-            <Link href="/study">
-              <Button variant="secondary" data-testid="btn-start-study" className="gap-2">
+            <Link href="/study" className="flex-1 sm:flex-none">
+              <Button variant="secondary" data-testid="btn-start-study" className="gap-2 w-full sm:w-auto min-h-[44px]">
                 <BookOpen className="w-4 h-4" />
                 Study
               </Button>
