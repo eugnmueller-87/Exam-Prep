@@ -191,6 +191,17 @@ export default function Quiz() {
 
   // Config screen
   if (quizState === "config") {
+    // How many questions actually match the chosen domain + difficulty. The
+    // quiz can only ask as many as exist, so we surface this to the user.
+    const available = (allQuestions ?? []).filter((q: Question) => {
+      if (domain !== "all" && q.domain !== domain) return false;
+      if (difficulty !== "all" && q.difficulty !== difficulty) return false;
+      return true;
+    }).length;
+    const requested = parseInt(questionCount);
+    const willAsk = Math.min(requested, available);
+    const isCapped = available > 0 && requested > available;
+
     return (
       <div className="max-w-xl mx-auto fade-in">
         <div className="mb-6">
@@ -245,15 +256,31 @@ export default function Quiz() {
                   <SelectItem value="20">20 questions (full)</SelectItem>
                 </SelectContent>
               </Select>
+              {!loadingQuestions && (
+                <p
+                  data-testid="available-count"
+                  className={`text-xs ${isCapped ? "text-amber-400" : "text-muted-foreground"}`}
+                >
+                  {available === 0
+                    ? "No questions match this filter."
+                    : isCapped
+                      ? `Only ${available} questions match this filter — the quiz will ask all ${available}.`
+                      : `${available} questions available with this filter.`}
+                </p>
+              )}
             </div>
 
             <Button
               data-testid="btn-begin-quiz"
               className="w-full mt-2"
               onClick={startQuiz}
-              disabled={createSession.isPending || loadingQuestions}
+              disabled={createSession.isPending || loadingQuestions || available === 0}
             >
-              {loadingQuestions ? "Loading questions..." : "Begin Quiz"}
+              {loadingQuestions
+                ? "Loading questions..."
+                : available === 0
+                  ? "No questions available"
+                  : `Begin Quiz (${willAsk} question${willAsk !== 1 ? "s" : ""})`}
             </Button>
           </CardContent>
         </Card>
