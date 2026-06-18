@@ -11,6 +11,13 @@ import type {
   InsertAnswer,
 } from "@shared/schema";
 
+// A question the user most recently answered incorrectly, plus the option they
+// picked. Used by the "Review Wrong Answers" section on the dashboard.
+export type WrongAnswer = Question & {
+  selectedIndex: number | null;
+  answeredAt: number | null;
+};
+
 // Node's built-in SQLite (node:sqlite, stable in Node 22+). No native compiler
 // needed — unlike better-sqlite3 — so it installs and deploys anywhere Node runs.
 //
@@ -140,6 +147,7 @@ export interface IStorage {
   // Answers
   saveAnswer(a: InsertAnswer): Answer;
   getSessionAnswers(sessionId: number): Answer[];
+  getWrongAnswers(domain?: string): WrongAnswer[];
 
   // Stats
   getQuestionStats(questionId: number): QuestionStat | undefined;
@@ -269,6 +277,46 @@ export class Storage implements IStorage {
       .prepare("SELECT * FROM answers WHERE session_id = ?")
       .all(sessionId) as any[];
     return rows.map(mapAnswer);
+  }
+
+  // Questions whose MOST RECENT answer was wrong (and not skipped). One row per
+  // question. answers.id (autoincrement) is used as the recency proxy since the
+  // answers table has no timestamp; the session's completed_at is surfaced as
+  // answeredAt for display. Optionally filtered by domain.
+  getWrongAnswers(domain?: string): WrongAnswer[] {
+    const args: any[] = [];
+    let domainFilter = "";
+    if (domain) {
+      domainFilter = "AND q.domain = ?";
+      args.push(domain);
+    }
+
+    const rows = sqlite
+      .prepare(
+        `SELECT q.*, latest.selected_index AS sel, s.completed_at AS answered_at
+         FROM (
+           SELECT a.question_id, a.selected_index, a.is_correct, a.session_id
+           FROM answers a
+           INNER JOIN (
+             SELECT question_id, MAX(id) AS max_id
+             FROM answers
+             GROUP BY question_id
+           ) m ON a.id = m.max_id
+         ) latest
+         INNER JOIN questions q ON q.id = latest.question_id
+         LEFT JOIN sessions s ON s.id = latest.session_id
+         WHERE latest.is_correct = 0
+           AND latest.selected_index IS NOT NULL
+           ${domainFilter}
+         ORDER BY answered_at DESC, q.id DESC`,
+      )
+      .all(...args) as any[];
+
+    return rows.map((r) => ({
+      ...mapQuestion(r),
+      selectedIndex: r.sel ?? null,
+      answeredAt: r.answered_at ?? null,
+    }));
   }
 
   getQuestionStats(questionId: number): QuestionStat | undefined {

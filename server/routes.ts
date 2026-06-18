@@ -94,6 +94,13 @@ export async function registerRoutes(server: Server, app: Express) {
     res.json(answers);
   });
 
+  // GET /api/answers/wrong - questions most recently answered incorrectly
+  // (optionally filtered by ?domain=plan|design|deploy)
+  app.get("/api/answers/wrong", (req, res) => {
+    const domain = req.query.domain as string | undefined;
+    res.json(storage.getWrongAnswers(domain && domain !== "all" ? domain : undefined));
+  });
+
   // GET /api/stats/overview - overall performance stats
   app.get("/api/stats/overview", (req, res) => {
     res.json(storage.getOverallStats());

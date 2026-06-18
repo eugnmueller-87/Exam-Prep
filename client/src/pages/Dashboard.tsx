@@ -1,11 +1,45 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
-import { Brain, BookOpen, TrendingUp, Clock, Target, AlertTriangle, BarChart3 } from "lucide-react";
+import {
+  Brain,
+  BookOpen,
+  TrendingUp,
+  Clock,
+  Target,
+  AlertTriangle,
+  BarChart3,
+  XCircle,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+type WrongAnswer = {
+  id: number;
+  domain: string;
+  topic: string;
+  subtopic: string;
+  difficulty: string;
+  question: string;
+  options: string;
+  correctIndex: number;
+  explanation: string;
+  selectedIndex: number | null;
+  answeredAt: number | null;
+};
 
 const DOMAIN_LABELS: Record<string, string> = {
   plan: "Plan AI Solutions",
@@ -229,6 +263,9 @@ export default function Dashboard() {
         </Card>
       </div>
 
+      {/* Review wrong answers */}
+      <WrongAnswersSection />
+
       {/* Recent sessions */}
       {recentSessions?.length > 0 && (
         <Card>
@@ -300,6 +337,133 @@ function StatCard({
           {value}
         </p>
         <p className="text-xs text-muted-foreground mt-1">{label}</p>
+      </CardContent>
+    </Card>
+  );
+}
+
+const DIFF_BADGE: Record<string, string> = {
+  easy: "border-emerald-500/40 text-emerald-400",
+  medium: "border-amber-500/40 text-amber-400",
+  hard: "border-red-500/40 text-red-400",
+};
+
+function WrongAnswersSection() {
+  const [domain, setDomain] = useState("all");
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+
+  const { data: wrong, isLoading } = useQuery<WrongAnswer[]>({
+    queryKey: ["/api/answers/wrong", domain],
+    queryFn: () => apiRequest("GET", `/api/answers/wrong?domain=${domain}`),
+  });
+
+  // Hide the whole section until the user has at least one wrong answer to review
+  // (keeps a clean dashboard for new users). Always render once data shows any.
+  const hasAny = (wrong?.length ?? 0) > 0 || domain !== "all";
+  if (!isLoading && !hasAny) return null;
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <XCircle className="w-4 h-4 text-red-400" />
+            Review Wrong Answers
+            {wrong && wrong.length > 0 && (
+              <span className="text-xs font-normal text-muted-foreground">({wrong.length})</span>
+            )}
+          </CardTitle>
+          <Select value={domain} onValueChange={setDomain}>
+            <SelectTrigger
+              data-testid="wrong-filter-domain"
+              className="w-full sm:w-44 min-h-[40px]"
+            >
+              <SelectValue placeholder="Domain" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Domains</SelectItem>
+              <SelectItem value="plan">Plan</SelectItem>
+              <SelectItem value="design">Design</SelectItem>
+              <SelectItem value="deploy">Deploy</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="space-y-2">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-14 rounded-lg" />
+            ))}
+          </div>
+        ) : wrong && wrong.length > 0 ? (
+          <div className="space-y-2.5">
+            {wrong.map((q) => {
+              const opts: string[] = JSON.parse(q.options);
+              const isExpanded = expandedId === q.id;
+              return (
+                <div
+                  key={q.id}
+                  data-testid={`wrong-card-${q.id}`}
+                  className="border border-border rounded-lg overflow-hidden"
+                >
+                  <button
+                    className="w-full text-left px-4 py-3.5 min-h-[44px] flex items-start gap-3 hover:bg-secondary/30 active:bg-secondary/40 transition-colors touch-manipulation"
+                    onClick={() => setExpandedId(isExpanded ? null : q.id)}
+                    data-testid={`wrong-expand-${q.id}`}
+                  >
+                    <XCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span
+                          className={`text-xs px-1.5 py-0.5 rounded border font-medium ${DOMAIN_COLORS[q.domain]}`}
+                        >
+                          {DOMAIN_LABELS[q.domain]}
+                        </span>
+                        <Badge variant="outline" className={`text-xs ${DIFF_BADGE[q.difficulty]}`}>
+                          {q.difficulty}
+                        </Badge>
+                      </div>
+                      <p className="text-sm font-medium leading-snug">{q.question}</p>
+                    </div>
+                    {isExpanded ? (
+                      <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+                    )}
+                  </button>
+
+                  {isExpanded && (
+                    <div className="px-4 pb-4 border-t border-border fade-in space-y-1.5 pt-3">
+                      {q.selectedIndex !== null && (
+                        <div className="flex items-start gap-2">
+                          <XCircle className="w-3.5 h-3.5 text-red-400 shrink-0 mt-0.5" />
+                          <p className="text-xs text-red-300">
+                            <span className="font-medium">Your answer:</span>{" "}
+                            {opts[q.selectedIndex]}
+                          </p>
+                        </div>
+                      )}
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                        <p className="text-xs text-emerald-300">
+                          <span className="font-medium">Correct:</span> {opts[q.correctIndex]}
+                        </p>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2 pt-2 border-t border-border/50 leading-relaxed">
+                        {q.explanation}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            No wrong answers in this domain — nice work! Try another filter or take a quiz.
+          </p>
+        )}
       </CardContent>
     </Card>
   );

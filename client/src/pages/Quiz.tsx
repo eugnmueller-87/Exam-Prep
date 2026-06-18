@@ -80,6 +80,7 @@ export default function Quiz() {
       queryClient.invalidateQueries({ queryKey: ["/api/stats/domains"] });
       queryClient.invalidateQueries({ queryKey: ["/api/stats/weak-topics"] });
       queryClient.invalidateQueries({ queryKey: ["/api/sessions/recent"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/answers/wrong"] });
     },
   });
 
