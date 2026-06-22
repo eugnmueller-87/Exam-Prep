@@ -3683,4 +3683,21 @@ export const questionBank: InsertQuestion[] = [
     explanation:
       "Semantic similarity compares generated responses to ground-truth outputs, and schema validation confirms the responses are valid JSON matching the fixed schema — together enabling automated regression evaluation. Latency/throughput, manual review, and token/cost metrics do not validate correctness against ground truth or structure.",
   },
+  {
+    domain: "design",
+    topic: "Design Agents and Flows",
+    subtopic: "ALM and multi-environment",
+    difficulty: "medium",
+    question:
+      "A company plans to roll out an IT help desk agent available in Microsoft Teams and Microsoft 365 Copilot. The agent must answer questions grounded in SharePoint Online content, create tickets in an external system, and handle multi-step interactions. The IT team requires dev, test, and prod environments, centralized connector governance, and multi-step extensibility. What should you recommend?",
+    options: JSON.stringify([
+      "Build a Copilot Studio agent that uses custom tools and deploy the agent by using ALM.",
+      "Create a Microsoft 365 Copilot agent.",
+      "Build the agent in Copilot Studio and share the agent directly in Teams.",
+      "Use the Agent Builder in Microsoft 365 Copilot to create a lightweight Q&A agent.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "The requirements — dev/test/prod environments, centralized connector governance, multi-step extensibility, grounding, and external ticket creation — call for a full Copilot Studio agent with custom tools deployed through an ALM process across environments. A directly-shared agent lacks managed multi-environment ALM, a plain M365 Copilot agent and the lightweight Agent Builder do not provide the connector governance and multi-step custom-tool extensibility required.",
+  },
 ];
