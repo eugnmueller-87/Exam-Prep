@@ -3098,4 +3098,589 @@ export const questionBank: InsertQuestion[] = [
     explanation:
       "A mature ALM pipeline for Copilot Studio agents automates quality gates before production promotion: regression tests (do existing topics still work?), integration tests (do actions and connectors return correct data?), and safety checks (does the agent comply with responsible AI guardrails?). These catch regressions before they affect production users.",
   },
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // EXAM-STYLE BANK — sourced from a 50-question AB-100 practice exam (scenario
+  // questions mirroring Microsoft's format). Domains mapped from objectives:
+  // 1.x = plan, 2.x = design, 3.x = deploy.
+  // ════════════════════════════════════════════════════════════════════════════
+
+  {
+    domain: "plan",
+    topic: "Analyze Requirements",
+    subtopic: "Grounding and access control",
+    difficulty: "medium",
+    question:
+      "A company plans to deploy a Microsoft Copilot Studio agent that answers employee questions by using product policy data from SharePoint Online and customer account data from Dynamics 365. Access is governed by Microsoft Entra ID. Responses must be based on current, accurate data, and users must only see content they are authorized to access. What should you recommend?",
+    options: JSON.stringify([
+      "Connect the agent to SharePoint and Dynamics 365 as knowledge sources and enforce access through Microsoft Entra permissions.",
+      "Allow the agent to generate answers without grounding to maximize coverage.",
+      "Publish the policy content to a public website so the agent can read it freely.",
+      "Store all prompts and responses in a database for later access decisions.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Connecting the agent directly to SharePoint and Dynamics 365 grounds responses in authoritative, up-to-date data, while enforcing user-specific access through Microsoft Entra. Unguided generation does not guarantee accuracy or access control, publishing content publicly violates data protection, and storing prompts/responses addresses neither grounding nor authorization.",
+  },
+  {
+    domain: "plan",
+    topic: "Analyze Requirements",
+    subtopic: "Agent vs. LLM-only",
+    difficulty: "medium",
+    question:
+      "An internal support process requires: employees submit requests in natural language; requests are evaluated against policy rules; follow-up actions execute automatically when conditions are met; exceptions are routed for human review. What should you do?",
+    options: JSON.stringify([
+      "Use an agent to handle conversational input, apply decision logic, and automate actions.",
+      "Use a large language model (LLM) only to generate responses and rely on humans to perform all actions.",
+      "Use a RAG workflow focused on knowledge retrieval.",
+      "Use a traditional analytics model for batch classification.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "An agent is appropriate because the requirements combine conversational interaction, rule-based evaluation, automated task execution, and human-in-the-loop exception handling in one flow. A standalone LLM performs no actions, RAG focuses on retrieval rather than decision-making/automation, and analytics models suit batch classification rather than interactive real-time workflows.",
+  },
+  {
+    domain: "plan",
+    topic: "Review Grounding Data",
+    subtopic: "Ingestion data preparation",
+    difficulty: "medium",
+    question:
+      "A customer-support agent uses a RAG workflow over an Azure AI Search index. Documents are ingested from SharePoint nightly. The library has duplicates and some policies update during the day, so the agent returns outdated answers and token usage has increased. You must ensure responses use the most current, relevant documents while reducing retrieval and inference costs. What should you do?",
+    options: JSON.stringify([
+      "Add ingestion-time data preparation to deduplicate and normalize the documents before indexing them.",
+      "Fine-tune the model on the document corpus.",
+      "Increase the context window to include more retrieved chunks.",
+      "Add prompt instructions telling the model to ignore outdated content.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Deduplicating and normalizing documents during ingestion ensures only current, relevant content is indexed and retrieved, reducing outdated responses and unnecessary context that drives up token usage. Fine-tuning does not address frequently changing content, larger context windows increase cost without fixing quality, and prompt instructions cannot reliably compensate for stale or duplicate grounding data.",
+  },
+  {
+    domain: "plan",
+    topic: "Review Grounding Data",
+    subtopic: "Grounding data qualities",
+    difficulty: "easy",
+    question:
+      "A Copilot Studio agent generates responses from a Dataverse table. Users report it references closed cases and outdated customer information. Which statement describes the grounding data qualities that must be reviewed?",
+    options: JSON.stringify([
+      "The grounding data must be evaluated for accuracy, relevance, timeliness, cleanliness, and availability.",
+      "Only the language model version determines grounding data quality.",
+      "Only availability matters because safety filters correct inaccurate data.",
+      "Relevance is optional for most agents.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Grounding data must be evaluated for accuracy, relevance, timeliness, cleanliness, and availability so the agent retrieves correct, up-to-date information. The model version does not determine external data quality, safety filters do not correct outdated source data, and irrelevant data leads to incorrect or misleading responses.",
+  },
+  {
+    domain: "plan",
+    topic: "Review Grounding Data",
+    subtopic: "Data readiness remediation",
+    difficulty: "hard",
+    question:
+      "A Copilot Studio agent answers questions from a Microsoft Fabric data warehouse and creates work orders. Issues: refresh occurs every 24 hours but responses must reflect updates within 15 minutes; data has duplicate asset IDs and missing maintenance status; intermittent connectivity to the warehouse. Which remediation plan should you implement?",
+    options: JSON.stringify([
+      "Enforce data quality rules in the data warehouse, implement incremental refresh to meet a 15-minute SLA, and cache a read-only snapshot of the required data for availability.",
+      "Keep the existing 24-hour refresh schedule and add a disclaimer.",
+      "Require users to manually validate every response.",
+      "Replace the data warehouse with document-based tracking.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Enforcing data quality rules fixes duplicates and missing values, incremental refresh meets the 15-minute timeliness requirement, and caching a read-only snapshot improves availability during connectivity interruptions. Keeping the existing schedule fails timeliness, manual validation shifts the burden to users, and replacing the warehouse adds complexity without addressing the core requirements.",
+  },
+  {
+    domain: "plan",
+    topic: "Analyze Requirements",
+    subtopic: "AI approvals configuration",
+    difficulty: "medium",
+    question:
+      "A Copilot Studio agent will automate purchase order approvals. Invoices arrive as PDFs/images, approval criteria include vague terms like 'reasonable,' and some scans are low quality. Routine POs should be approved automatically, exceptions reviewed by a human, and all decisions logged. What should you do?",
+    options: JSON.stringify([
+      "Use AI approvals with a low temperature, require explicit criteria, and route ambiguous or low-quality cases to human review.",
+      "Use AI approvals with a high temperature for flexibility and remove human oversight.",
+      "Avoid AI approvals entirely and process everything manually.",
+      "Rely only on external data without human review.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Low temperature gives consistent, deterministic outputs, explicit criteria reduce ambiguity, and routing low-quality or unclear cases to human review satisfies exception handling and auditability. High temperature adds variability and removes oversight, avoiding AI approvals fails the automation requirement, and relying on external data without review does not address ambiguity.",
+  },
+  {
+    domain: "plan",
+    topic: "Design AI Strategy",
+    subtopic: "Foundry governance",
+    difficulty: "medium",
+    question:
+      "A multi-agent solution uses Microsoft Foundry across Microsoft 365 Copilot and Copilot Studio. Business units independently create Foundry projects and deploy models without consistent governance. Security requires centralized governance to enforce organization-wide deployment policies and centralized auditing across all hubs and projects. What should you implement?",
+    options: JSON.stringify([
+      "Create and enforce Azure Policy assignments for Foundry projects to control AI model deployments.",
+      "Move all data to OneLake.",
+      "Create Cost Management budgets to limit spending.",
+      "Require the use of Azure Machine Learning for all projects.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Azure Policy enables centralized, enforceable governance over allowed configurations and deployments across Foundry hubs and projects, with auditing and compliance at scale. OneLake does not govern model deployments, Cost Management budgets limit spend but not deployments, and mandating Azure ML does not enforce consistent cross-project governance.",
+  },
+  {
+    domain: "plan",
+    topic: "Design AI Strategy",
+    subtopic: "Cross-environment Dynamics 365",
+    difficulty: "hard",
+    question:
+      "Dynamics 365 Sales and Customer Service run in separate Power Platform production environments in different regions, each with a separate Dataverse database. Sales must see support case statuses and Customer Service must see opportunity values, without replicating data and minimizing integration components and admin overhead. What should you recommend?",
+    options: JSON.stringify([
+      "Keep separate production environments per region and use Dataverse virtual tables to access data across the environments.",
+      "Move both solutions into a single production environment and restrict access by using security roles.",
+      "Sync data between environments by using scheduled integration flows.",
+      "Create a shared environment and migrate all data into it.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Dataverse virtual tables enable real-time cross-environment access without replicating data, while keeping regional separation and minimizing integration complexity. Merging environments removes regional separation, scheduled flows duplicate data and add overhead, and a shared environment with migration increases complexity and contradicts the no-replication requirement.",
+  },
+  {
+    domain: "plan",
+    topic: "Evaluate Costs and Benefits",
+    subtopic: "Model router Data Zone",
+    difficulty: "medium",
+    question:
+      "An AI assistant in Microsoft Foundry handles high-volume FAQs and lower-volume complex troubleshooting and must stay within a Data Zone boundary. You need a model router with Data Zone Standard deployments that includes Anthropic Claude models as routing targets, minimizing deployment and operational overhead. What should you include?",
+    options: JSON.stringify([
+      "Deploy the Claude models from the model catalog to the Foundry resource and include them in a model router subset.",
+      "Deploy only the model router without any underlying models.",
+      "Deploy the models to managed compute instead of the Foundry resource.",
+      "Set routing mode to Quality and add no models.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Deploying Claude models from the catalog into the Foundry resource makes them Data Zone-compliant deployments usable as routing targets, with minimal overhead. Deploying only the router gives nothing to route to, managed compute does not integrate them as supported router targets, and changing routing mode does not add the required Claude targets.",
+  },
+  {
+    domain: "plan",
+    topic: "Evaluate Costs and Benefits",
+    subtopic: "Build/buy/extend TCO",
+    difficulty: "medium",
+    question:
+      "An internal employee assistant answers HR/IT policy questions using Azure OpenAI and Azure AI Search, with a lower-cost model for simple FAQs and a higher-cost model for complex scenarios. It will expand to policy exception requests needing higher accuracy, and Finance requires monthly spend within a fixed budget. What should you recommend to meet accuracy while controlling TCO?",
+    options: JSON.stringify([
+      "Use a model router to route simple requests to the lower-cost model and complex requests to the higher-cost model.",
+      "Send all requests to the higher-cost model for maximum accuracy.",
+      "Send all requests to the lower-cost model to minimize spend.",
+      "Replace the solution with a single general-purpose model.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Routing by complexity lets simple questions use a lower-cost model while reserving higher-cost models for accuracy-critical scenarios, keeping spend within budget. Sending everything to one model (either tier) or replacing the solution fails the combined cost and accuracy requirements.",
+  },
+  {
+    domain: "plan",
+    topic: "Evaluate Costs and Benefits",
+    subtopic: "ROI calculation",
+    difficulty: "medium",
+    question:
+      "A finance team uses a Copilot Studio agent with 8,000 successful runs/month, each replacing an eight-minute manual task. The environment has 'Disable money saving rules' enabled, so Analytics reports time savings but not monetary savings. You must calculate monthly productivity savings in dollars while complying with the setting. What should you do?",
+    options: JSON.stringify([
+      "Export time-savings data from Analytics and calculate monetary savings externally by applying appropriate labor cost assumptions.",
+      "Change the environment configuration to re-enable money saving rules.",
+      "Model reduced Azure consumption costs instead.",
+      "Infer monetary savings without applying explicit labor cost assumptions.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Exporting time-savings data and computing dollars externally derives ROI while respecting the 'Disable money saving rules' setting. Changing the configuration violates the requirement, Azure consumption costs do not reflect productivity savings from replaced manual work, and inferring savings without labor cost assumptions is not accurate or defensible.",
+  },
+  {
+    domain: "plan",
+    topic: "Evaluate Costs and Benefits",
+    subtopic: "Model router Balanced",
+    difficulty: "medium",
+    question:
+      "A customer support agent in Foundry Agent Service processes 1,000,000 chats/month; 80% are simple, 20% need complex reasoning. You must reduce TCO without reducing quality for complex requests, using a single deployment that routes by prompt complexity and honors a data zone boundary. What should you do?",
+    options: JSON.stringify([
+      "Deploy a model router that has routing mode set to Balanced and use a Data Zone Standard deployment.",
+      "Deploy a model router with routing mode set to Quality so all requests use the highest-quality model.",
+      "Manually switch traffic between models during peak hours.",
+      "Use a single large model for all requests.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Balanced routing sends simple requests to lower-cost models while reserving higher-capability models for complex prompts, reducing cost without sacrificing quality, and a Data Zone Standard deployment honors the boundary. Quality-only routing, manual switching, and a single large model increase cost and miss the requirements.",
+  },
+  {
+    domain: "plan",
+    topic: "Evaluate Costs and Benefits",
+    subtopic: "Build/buy/extend ROI criteria",
+    difficulty: "medium",
+    question:
+      "A company will introduce an AI assistant to reduce average handling time (AHT) in Dynamics 365 Customer Service. A pilot shows Microsoft 365 Copilot reduces AHT if agents can access internal Microsoft 365 content and a third-party knowledge base. You must evaluate over 12 months using ROI criteria that capture TCO and support a build/buy/extend decision. Which ROI criteria set should you use?",
+    options: JSON.stringify([
+      "Include productivity benefits and include costs for licensing, implementation, and ongoing operations.",
+      "Include only the projected cost savings.",
+      "Include only one-time implementation costs.",
+      "Include only qualitative benefits.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "A complete TCO-based ROI must include measurable productivity benefits plus all relevant costs — licensing, implementation effort, and ongoing operations. Focusing on only savings, only one-time costs, or only qualitative benefits does not provide a complete evaluation.",
+  },
+  {
+    domain: "plan",
+    topic: "Evaluate Costs and Benefits",
+    subtopic: "Model router Balanced",
+    difficulty: "medium",
+    question:
+      "A customer service app processes two million chats/month; 85% are simple FAQ responses, 15% need complex reasoning and tool use. The company must use a single endpoint and explicitly account for ongoing inference costs in ROI. You must route simple requests to lower-cost models and complex requests to higher-capability models. What should you do?",
+    options: JSON.stringify([
+      "Deploy a model router that has routing mode set to Balanced.",
+      "Deploy a single GPT-4.1 model and route all requests to it.",
+      "Deploy a model router set to Cost only.",
+      "Deploy a model router set to Quality only.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Balanced routing optimizes both cost and quality by sending simple requests to lower-cost models and reserving higher-capability models for complex ones. Cost-only risks insufficient quality for complex requests, Quality-only adds unnecessary inference cost, and a single-model deployment ignores cost optimization.",
+  },
+  {
+    domain: "design",
+    topic: "Design Prompt Agents",
+    subtopic: "Schema-compliant output",
+    difficulty: "medium",
+    question:
+      "A Copilot Studio agent generates a daily incident summary from a transcript and Dataverse incident data. The response must always be valid JSON matching a fixed schema, and must return 'not found' if required fields are missing. Generative orchestration is enabled and the agent sometimes returns free-form text or fabricates details. What should you do?",
+    options: JSON.stringify([
+      "Configure an AI prompt tool that enforces the JSON schema and returns 'not found' when required Dataverse data is missing.",
+      "Rely on agent instructions alone to request JSON.",
+      "Integrate a Model Context Protocol (MCP) server.",
+      "Enable the Computer Use tool to format the output.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "An AI prompt tool can enforce a fixed JSON schema and apply conditional logic to return 'not found' when required fields are missing, preventing free-form or fabricated responses. Agent instructions alone do not guarantee deterministic output, MCP is unnecessary here, and Computer Use is inappropriate for structured data enforcement.",
+  },
+  {
+    domain: "design",
+    topic: "Design Prompt Actions",
+    subtopic: "Fallback behavior",
+    difficulty: "medium",
+    question:
+      "A Copilot Studio agent in a Power Apps canvas app answers policy questions. The app allows anonymous access, and the agent uses a prompt node grounded in policy documents and internal websites. It sometimes answers even when the information is not present in the grounding content. You must ensure a predictable response when information is missing, while keeping the prompt concise. What should you do in the prompt node instructions?",
+    options: JSON.stringify([
+      "Instruct the prompt to return a fixed fallback value when the answer is NOT present in the provided inputs.",
+      "Add more grounding sources to improve coverage.",
+      "Tighten the system instructions with additional rules.",
+      "Adjust the grounding weight parameter.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Instructing the prompt to return a fixed fallback value when the answer is not present ensures predictable behavior and prevents unsupported responses, while keeping instructions concise — especially important for anonymous access. Adding sources, tightening system instructions, or adjusting grounding weight do not guarantee deterministic fallback behavior.",
+  },
+  {
+    domain: "design",
+    topic: "Design Agents and Flows",
+    subtopic: "Authoring approach",
+    difficulty: "medium",
+    question:
+      "Using Dynamics 365 Customer Service and Microsoft 365 Copilot, you plan a support agent that runs multi-step workflows to create/update cases, calls a third-party ticketing system via connectors, and can be shared across the support team with controlled publishing and lifecycle management. What authoring approach should you recommend?",
+    options: JSON.stringify([
+      "Use the full version of Copilot Studio in the standalone web portal.",
+      "Implement the workflows by using Power Automate and call them from simple conversation topics.",
+      "Build the agent on Azure AI Bot Service.",
+      "Use the lightweight Agent Builder.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "The full version of Copilot Studio provides multi-step workflows, connector integration, environment governance, and controlled publishing required for a team-wide support agent. Azure AI Bot Service and Power Automate-only approaches lack unified agent lifecycle management, and Agent Builder targets lightweight personal/team scenarios without connector support or complex workflows.",
+  },
+  {
+    domain: "design",
+    topic: "Design Extensibility",
+    subtopic: "MCP centralized tools",
+    difficulty: "hard",
+    question:
+      "A Copilot Studio agent creates/updates purchase orders in Dynamics 365 Finance and Supply Chain Management. The exposed procurement operations change frequently as extensions deploy. You need an extensibility approach that centralizes tool definitions, restricts access to approved agent platforms, and automatically reflects tool updates without republishing the agent. What should you recommend?",
+    options: JSON.stringify([
+      "Connect the agent to the Dynamics 365 ERP Model Context Protocol (MCP) server and configure allowed MCP clients.",
+      "Create custom connectors for finance and operations APIs and manually update them when APIs change.",
+      "Embed REST calls directly in each topic.",
+      "Use UI automation to drive the ERP screens.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "The Dynamics 365 ERP MCP server centralizes tool definitions; MCP lets tools be discovered and updated dynamically so changes reflect automatically without republishing, and allowed MCP clients enforce platform access control. The alternatives require manual updates, lack centralized governance, or rely on brittle UI automation.",
+  },
+  {
+    domain: "design",
+    topic: "Design Extensibility",
+    subtopic: "MCP shared tools",
+    difficulty: "medium",
+    question:
+      "Multiple Copilot Studio agents create/update service tickets by calling internal LOB APIs owned by another team that change frequently. All agents share the same tool definitions. You need an approach that lets tools be centrally managed and dynamically updated without republishing each agent. What should you recommend?",
+    options: JSON.stringify([
+      "Connect each agent to a Model Context Protocol (MCP) server to enable dynamic tool discovery and centralized updates.",
+      "Add per-agent plugins that each call the APIs.",
+      "Embed the REST calls in each agent's topics.",
+      "Use UI automation against the LOB app.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "MCP centrally hosts tool definitions that agents discover dynamically at runtime; when APIs change, the MCP server is updated once and applied across all connected agents without republishing. Per-agent plugins, embedded REST calls, and UI automation require per-agent updates and add complexity.",
+  },
+  {
+    domain: "design",
+    topic: "Design Agent Behaviors",
+    subtopic: "Voice mode",
+    difficulty: "medium",
+    question:
+      "A Copilot Studio agent is integrated with Dynamics 365 Customer Service telephony for inbound calls. You need to enable Speech & DTMF and add the required voice system topics without rewriting existing topics or changing conversation logic. What should you do in Copilot Studio?",
+    options: JSON.stringify([
+      "Enable Optimize for voice and publish the agent.",
+      "Add an End conversation node to the first topic and publish the agent.",
+      "Enable only the Telephony channel.",
+      "Manually rewrite each topic to add speech nodes.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Enabling Optimize for voice automatically activates Speech & DTMF support and adds the required voice system topics while preserving existing conversation logic. Enabling the Telephony channel alone or modifying individual topics does not enable the voice modality or required system behaviors.",
+  },
+  {
+    domain: "design",
+    topic: "Design Custom Models",
+    subtopic: "Foundry deployment options",
+    difficulty: "hard",
+    question:
+      "A Copilot Studio agent calls a custom generative AI model hosted in Microsoft Foundry to draft customer-facing responses, invoked through a single REST endpoint, used from Teams and SharePoint Online. Security mandates Microsoft Entra authentication without API keys and network isolation for the Foundry hub and workspace. What deployment option should you recommend?",
+    options: JSON.stringify([
+      "Deploy the model as a managed compute deployment to an Azure Machine Learning online endpoint.",
+      "Deploy the model as a standard MaaS deployment using key-based authentication.",
+      "Use the playground deployment option.",
+      "Use the batch deployment option.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Managed compute deployments in Azure Machine Learning support Microsoft Entra authentication and network isolation through hub and workspace networking controls. Standard MaaS relies on key-based auth, and playground or batch options do not meet the runtime and security requirements.",
+  },
+  {
+    domain: "design",
+    topic: "Design Agent Behaviors",
+    subtopic: "Voice prerequisite",
+    difficulty: "medium",
+    question:
+      "A chat-only Copilot Studio agent is published to Microsoft Teams in a Power Platform environment that has 'Get new features early' enabled. You plan to add inbound phone calls via the Telephony channel and Speech & DTMF, but 'Optimize for voice' is unavailable. What should you do first to enable voice authoring features?",
+    options: JSON.stringify([
+      "Disable Get new features early for the Power Platform environment.",
+      "Enable the Telephony channel and retry.",
+      "Change the agent's authentication settings.",
+      "Recreate the agent from scratch.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Voice authoring and the Optimize for voice option are not supported when 'Get new features early' is enabled for the hosting Power Platform environment, so it must be disabled first. Enabling the Telephony channel, changing authentication, or recreating the agent does not remove this platform limitation.",
+  },
+  {
+    domain: "design",
+    topic: "Design Extensibility",
+    subtopic: "MCP shared tools",
+    difficulty: "medium",
+    question:
+      "Multiple Copilot Studio agents create/update service desk tickets by calling an internal ITSM API. The same ticketing actions must be shared across all agents, and the API schema changes frequently. You need to define the ticketing actions once and have updates automatically apply to all agents. What should you do?",
+    options: JSON.stringify([
+      "Connect each agent to a Model Context Protocol (MCP) server that publishes the ticketing tools.",
+      "Add a separate plugin to each agent.",
+      "Embed the REST calls in each agent.",
+      "Use UI automation to drive the ITSM web app.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "MCP centrally defines and hosts tool schemas shared across agents; when the API changes, the MCP server is updated once and reflected in all connected agents. Per-agent plugins, embedded REST calls, and UI automation do not provide centralized, reusable tool management.",
+  },
+  {
+    domain: "design",
+    topic: "Design Computer Use",
+    subtopic: "Execution environment scaling",
+    difficulty: "medium",
+    question:
+      "A Copilot Studio agent performs browser-based automation against a legacy web app using the Computer Use tool. When many users trigger automation simultaneously, runs fail due to insufficient machines. The environment must be Microsoft Entra joined, Intune enrolled, and able to scale for concurrent demand. What should you recommend?",
+    options: JSON.stringify([
+      "A Cloud PC pool.",
+      "A bring-your-own machine using a single dedicated Windows device registered in Power Automate.",
+      "A single hosted browser instance.",
+      "A bring-your-own machine using one shared workstation.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "A Cloud PC pool provides a scalable set of Microsoft Entra joined and Intune-managed environments that handle concurrent Computer Use executions under organizational policy. A hosted browser does not scale for concurrency, and bring-your-own single-machine options lack scalability or add operational overhead.",
+  },
+  {
+    domain: "design",
+    topic: "Design Custom Models",
+    subtopic: "M365 Copilot plugin",
+    difficulty: "medium",
+    question:
+      "A customer support agent in Copilot Studio grounds responses in product documents, securely calls an external Order API over HTTPS for lookups/refunds, and invokes a custom Foundry model. You must make the agent available directly from Microsoft 365 surfaces (Teams, SharePoint) without building a custom UI or hosting model infrastructure in the tenant. What should you recommend?",
+    options: JSON.stringify([
+      "Build a Microsoft 365 Copilot plugin that exposes the Order API and Foundry model endpoints and use Microsoft 365 Copilot as the UI.",
+      "Build a custom web app UI for the agent.",
+      "Index the Order API responses for search instead of calling it.",
+      "Host the model in the tenant and expose a custom endpoint.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Microsoft 365 Copilot plugins let Copilot invoke external APIs and custom model endpoints while reusing Microsoft 365 surfaces such as Teams and SharePoint as the UI, avoiding a custom UI or self-hosted model infrastructure. The alternatives require custom experiences, misuse indexing for transactional actions, or bypass Copilot extensibility patterns.",
+  },
+  {
+    domain: "design",
+    topic: "Orchestrate Prebuilt Agents",
+    subtopic: "Finance and Operations knowledge",
+    difficulty: "medium",
+    question:
+      "Using Dynamics 365 Supply Chain Management with Copilot for finance and operations enabled, Dataverse virtual tables (including on-hand inventory) are available. You need an existing Copilot Studio agent to answer on-hand inventory questions using live, structured finance and operations data. What should you do in Copilot Studio?",
+    options: JSON.stringify([
+      "Add the Finance and Operations virtual table as a Dynamics 365 knowledge source to the agent and publish the agent.",
+      "Create a new agent using Dual-write synchronization.",
+      "Build a custom SDK workflow to query the data.",
+      "Replicate the inventory data into a separate Dataverse table.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Copilot Studio supports adding Dataverse Finance and Operations virtual tables directly as Dynamics 365 knowledge sources, enabling grounded responses on live operational data without replication or custom development. Creating a new agent via Dual-write or building a custom SDK workflow is unnecessary here.",
+  },
+  {
+    domain: "design",
+    topic: "Orchestrate Prebuilt Agents",
+    subtopic: "Copilot for Sales",
+    difficulty: "medium",
+    question:
+      "A company deploys Microsoft 365 Copilot for Sales to sellers using Teams and Outlook. Sales meetings are recorded and transcribed in Teams, but meeting insights are not generated. What should you do to ensure meeting insights are generated?",
+    options: JSON.stringify([
+      "Ensure that the Sales agent version in Teams is 1.0.9 or later.",
+      "Disable optional connected experiences in Microsoft 365 Apps policies.",
+      "Reduce the email thread length.",
+      "Turn off Sales Chat.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Meeting insights in Microsoft 365 Copilot for Sales require a supported Sales agent version in Teams; version 1.0.9 or later enables it. Disabling optional connected experiences would prevent Copilot features, email thread length is unrelated, and turning off Sales Chat disables capabilities rather than enabling insights.",
+  },
+  {
+    domain: "design",
+    topic: "Orchestrate Prebuilt Agents",
+    subtopic: "Finance and operations Copilot",
+    difficulty: "medium",
+    question:
+      "A company uses Dynamics 365 Finance and Operations apps, including Supply Chain Management. You need conversational, in-app assistance from Copilot available across the finance and operations apps. Which Copilot feature should you enable?",
+    options: JSON.stringify([
+      "Generative help and guidance.",
+      "Review and accept changes to purchase orders.",
+      "Workflow history summary.",
+      "Workload insights with Copilot in the Warehouse Management mobile app.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Generative help and guidance provides conversational, in-app assistance across finance and operations apps. PO change acceptance is task-specific, workflow history summary gives workflow insights rather than interactive assistance, and Warehouse Management workload insights is limited to one app rather than a cross-application experience.",
+  },
+  {
+    domain: "design",
+    topic: "Orchestrate Prebuilt Agents",
+    subtopic: "Warehouse Management insights",
+    difficulty: "medium",
+    question:
+      "A company uses Dynamics 365 Supply Chain Management with the Warehouse Management mobile app and Copilot features available. Supervisors want in-app AI assistance that summarizes warehouse work and workforce data — work headers, pick lines, receiving lines, and available workforce — directly in the mobile app. Which Copilot feature should you configure?",
+    options: JSON.stringify([
+      "Workload insights with Copilot.",
+      "Analyze demand plans with Copilot.",
+      "Generative help and guidance.",
+      "Workflow history summary.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Workload insights with Copilot surfaces operational insights — available work, pick and receiving lines, and workforce availability — directly within the Warehouse Management mobile app. The other features focus on planning analysis, general assistance, or text summarization rather than operational workload insights.",
+  },
+  {
+    domain: "deploy",
+    topic: "Monitor Agents",
+    subtopic: "Azure Monitor Logs",
+    difficulty: "medium",
+    question:
+      "Two production agents — one in Copilot Studio, one in Foundry — send telemetry to the same Azure Monitor Application Insights resource. You need to identify agent runs with the highest token usage and analyze related traces, dependencies, and exceptions across both agents. What should you use?",
+    options: JSON.stringify([
+      "Azure Monitor Logs.",
+      "The Microsoft Copilot Studio analytics dashboard.",
+      "Azure Monitor Metrics Explorer.",
+      "Azure Monitor workbooks.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Azure Monitor Logs gives a centralized, query-based view of Application Insights telemetry to investigate individual runs and correlate token usage with traces, dependencies, and exceptions across both agents. Metrics Explorer shows aggregated trends, Copilot Studio analytics only covers Copilot Studio agents, and workbooks support visualization rather than detailed query-driven diagnostics.",
+  },
+  {
+    domain: "deploy",
+    topic: "Monitor Agents",
+    subtopic: "Azure Monitor Metrics Explorer",
+    difficulty: "medium",
+    question:
+      "Two agents — one in Copilot Studio, one in Foundry — send telemetry to the same Application Insights resource. You need to monitor trends over time in request volume, failure rate, and average latency across both agents, and configure alerts when thresholds are exceeded. Which Azure Monitor tool should you use?",
+    options: JSON.stringify([
+      "Azure Monitor Metrics Explorer.",
+      "The Microsoft Copilot Studio analytics dashboard.",
+      "The agent details views.",
+      "Azure Monitor workbooks.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Metrics Explorer analyzes aggregated telemetry — request volume, latency, and failure rates over time — and supports alerting on thresholds. Agent details views focus on individual executions, Copilot Studio analytics does not cover Foundry agents, and workbooks are for visualization rather than metric-based alerting.",
+  },
+  {
+    domain: "deploy",
+    topic: "Interpret Telemetry",
+    subtopic: "Capture exceptions",
+    difficulty: "medium",
+    question:
+      "A Copilot Studio agent invokes a Power Automate flow that calls an Azure function; telemetry goes to Application Insights. Users intermittently get generic errors, but no failures appear in Application Insights. Investigation shows the function catches exceptions and returns HTTP 200 with error details in the payload. You need Application Insights to detect and alert on the failures. What should you do?",
+    options: JSON.stringify([
+      "Configure Application Insights to capture exceptions from the function.",
+      "Add CPU utilization metrics for the function.",
+      "Configure an availability test for the endpoint.",
+      "Disable telemetry sampling to reduce noise.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Capturing exceptions in Application Insights makes failures currently hidden by handled errors observable and alertable. CPU metrics and availability tests monitor infrastructure health rather than application-level failures, and disabling telemetry removes visibility.",
+  },
+  {
+    domain: "deploy",
+    topic: "Tune AI Solutions",
+    subtopic: "On Your Data strictness",
+    difficulty: "hard",
+    question:
+      "A company uses Azure OpenAI On Your Data in Foundry with an Azure AI Search index, inScope = true, and citations required. The assistant sometimes says information is unavailable even though it exists; you confirm relevant chunks are retrieved but not included in the prompt. You must increase the likelihood that retrieved chunks are included by changing only inferencing parameters. What should you do?",
+    options: JSON.stringify([
+      "Reduce the strictness parameter.",
+      "Recreate the Azure AI Search index with smaller chunks.",
+      "Change the embedding model.",
+      "Change the query type used for retrieval.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "The strictness parameter controls how aggressively retrieved content is filtered before being included in the prompt; reducing it increases recall so more relevant chunks pass through, without changing documents, embeddings, or the index. Changing embeddings or chunking requires re-ingestion, and query type affects retrieval rather than post-retrieval filtering.",
+  },
+  {
+    domain: "deploy",
+    topic: "Tune AI Solutions",
+    subtopic: "Automated evaluations",
+    difficulty: "medium",
+    question:
+      "A company uses Microsoft Foundry to evaluate an Azure OpenAI chat model. A JSONL dataset contains ground-truth outputs, and responses must be valid JSON conforming to a fixed schema. You need automated regression evaluations that generate new responses, compare them to ground truth, and validate JSON structure. Which evaluation configurations should you use?",
+    options: JSON.stringify([
+      "Semantic similarity and schema validation.",
+      "Latency and throughput benchmarks.",
+      "Only manual human review.",
+      "Token counting and cost estimation.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Semantic similarity compares generated responses to ground-truth outputs, and schema validation confirms the responses are valid JSON matching the fixed schema — together enabling automated regression evaluation. Latency/throughput, manual review, and token/cost metrics do not validate correctness against ground truth or structure.",
+  },
 ];
