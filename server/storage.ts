@@ -380,6 +380,8 @@ export class Storage implements IStorage {
     totalCorrect: number;
     totalSessions: number;
     avgScore: number;
+    masteredCount: number;
+    totalQuestions: number;
   } {
     const statsResult = sqlite
       .prepare(
@@ -395,11 +397,21 @@ export class Storage implements IStorage {
       )
       .get() as any;
 
+    // Mastery: distinct questions that have been answered correctly at least
+    // once (times_correct > 0). This only ever goes up the first time a given
+    // question is answered correctly — re-answering it correctly does not change
+    // the count, and the total bank size is the denominator.
+    const masteredResult = sqlite
+      .prepare("SELECT count(*) AS mastered FROM question_stats WHERE times_correct > 0")
+      .get() as any;
+
     return {
       totalAttempted: statsResult?.totalAttempted ?? 0,
       totalCorrect: statsResult?.totalCorrect ?? 0,
       totalSessions: sessionsResult?.count ?? 0,
       avgScore: Math.round(sessionsResult?.avgScore ?? 0),
+      masteredCount: masteredResult?.mastered ?? 0,
+      totalQuestions: this.getQuestionCount(),
     };
   }
 

@@ -127,6 +127,49 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Mastery progress — how many unique questions answered correctly at least once */}
+      {loadingOverview ? (
+        <Skeleton className="h-24 rounded-xl" />
+      ) : (
+        (() => {
+          const mastered = overview?.masteredCount ?? 0;
+          const total = overview?.totalQuestions ?? 0;
+          const pct = total > 0 ? Math.round((mastered / total) * 100) : 0;
+          return (
+            <Card data-testid="mastery-card">
+              <CardContent className="pt-5 pb-5">
+                <div className="flex items-end justify-between mb-2 gap-3">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span className="text-sm font-medium">Questions Mastered</span>
+                  </div>
+                  <div className="text-right">
+                    <span
+                      className="text-2xl font-bold tracking-tight text-emerald-400"
+                      data-testid="mastery-count"
+                    >
+                      {mastered}
+                    </span>
+                    <span className="text-sm text-muted-foreground"> / {total}</span>
+                  </div>
+                </div>
+                <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-emerald-500 rounded-full transition-all duration-700"
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  {mastered === 0
+                    ? "Answer a question correctly to start building mastery."
+                    : `${pct}% of the question bank answered correctly at least once.`}
+                </p>
+              </CardContent>
+            </Card>
+          );
+        })()
+      )}
+
       {/* Stats row */}
       {loadingOverview ? (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
