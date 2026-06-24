@@ -52,6 +52,27 @@ function shuffleOptions(q: Question): Question {
   };
 }
 
+// "Weak topics / exam traps" — the high-value concepts that are easiest to get
+// wrong on the real exam (and that have tripped up practice runs). A question is
+// included if its topic or subtopic matches any of these regexes. Kept on the
+// server so the set can be tuned without a schema change or DB migration.
+const WEAK_TOPIC_PATTERNS: RegExp[] = [
+  /model router/i, // Balanced vs Quality vs Cost
+  /monitor|telemetry|agent details|metrics explorer|azure monitor/i, // Logs vs Metrics vs Agent details
+  /model context protocol|mcp/i, // centralized tools
+  /multi-app|virtual table|data organization/i, // cross-environment data
+  /voice|contact center/i, // Optimize for voice, CloseOmnichannelConversation
+  /authoring|agents and flows|platform selection|multi-agent solution|task agents|foundry agent service/i, // Copilot Studio vs Agent Builder
+  /orchestrate prebuilt|prebuilt agents|sales service|finance sc ai|warehouse|cx service/i, // Sales/Service/F&O Copilot features
+  /test|validation|evaluation/i, // similarity test, schema validation
+  /telemetry interpret|tuning/i, // strictness, temperature=0
+];
+
+function isWeakTopic(q: { topic: string; subtopic: string }): boolean {
+  const hay = `${q.topic} ${q.subtopic}`;
+  return WEAK_TOPIC_PATTERNS.some((re) => re.test(hay));
+}
+
 export async function registerRoutes(server: Server, app: Express) {
   // Seed questions on startup if DB is empty
   const count = storage.getQuestionCount();
@@ -64,12 +85,16 @@ export async function registerRoutes(server: Server, app: Express) {
 
   // GET /api/questions - list questions with optional filters
   app.get("/api/questions", (req, res) => {
-    const { domain, difficulty, limit } = req.query;
-    const questions = storage.getQuestions(
+    const { domain, difficulty, limit, weak } = req.query;
+    let questions = storage.getQuestions(
       domain as string | undefined,
       difficulty as string | undefined,
       limit ? parseInt(limit as string) : undefined,
     );
+    // ?weak=true restricts to the curated "exam traps" topic set.
+    if (weak === "true") {
+      questions = questions.filter(isWeakTopic);
+    }
     res.json(questions.map(shuffleOptions));
   });
 

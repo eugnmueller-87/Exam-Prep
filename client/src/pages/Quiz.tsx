@@ -50,7 +50,8 @@ export default function Quiz() {
   const [domain, setDomain] = useState("all");
   const [difficulty, setDifficulty] = useState("all");
   const [questionCount, setQuestionCount] = useState("10");
-  const [wrongOnly, setWrongOnly] = useState(false);
+  // Question pool: "all" = full bank, "wrong" = previously-wrong, "weak" = curated exam-trap topics.
+  const [poolMode, setPoolMode] = useState<"all" | "wrong" | "weak">("all");
   const [questions, setQuestions] = useState<Question[]>([]);
   const [sessionId, setSessionId] = useState<number | null>(null);
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -72,6 +73,14 @@ export default function Quiz() {
   const { data: wrongQuestions, isLoading: loadingWrong } = useQuery<Question[]>({
     queryKey: ["/api/answers/wrong"],
     queryFn: () => apiRequest("GET", "/api/answers/wrong"),
+  });
+
+  // Curated "exam traps" question set — the high-value topics that are easy to
+  // get wrong (model router modes, monitoring tools, MCP, platform selection,
+  // voice, prebuilt-agent features, testing, tuning). Always available to drill.
+  const { data: weakQuestions, isLoading: loadingWeak } = useQuery<Question[]>({
+    queryKey: ["/api/questions", "weak"],
+    queryFn: () => apiRequest("GET", "/api/questions?weak=true"),
   });
 
   const createSession = useMutation({
@@ -99,8 +108,13 @@ export default function Quiz() {
   const isLast = currentIdx === questions.length - 1;
 
   async function startQuiz() {
-    // Source pool: either the full bank or only questions answered wrong before.
-    const pool = wrongOnly ? (wrongQuestions ?? []) : (allQuestions ?? []);
+    // Source pool: full bank, previously-wrong, or curated exam-trap topics.
+    const pool =
+      poolMode === "wrong"
+        ? (wrongQuestions ?? [])
+        : poolMode === "weak"
+          ? (weakQuestions ?? [])
+          : (allQuestions ?? []);
     if (pool.length === 0) return;
 
     let qs = [...pool];
@@ -110,7 +124,7 @@ export default function Quiz() {
     setQuestions(qs);
 
     const session = await createSession.mutateAsync({
-      mode: wrongOnly ? "wrong-review" : "quiz",
+      mode: poolMode === "wrong" ? "wrong-review" : poolMode === "weak" ? "weak-review" : "quiz",
       domain: domain !== "all" ? domain : null,
       difficulty: difficulty !== "all" ? difficulty : null,
       totalQuestions: qs.length,
@@ -205,9 +219,13 @@ export default function Quiz() {
   // Config screen
   if (quizState === "config") {
     // How many questions match the chosen pool + domain + difficulty. The quiz
-    // can only ask as many as exist, so we surface this to the user. In
-    // "wrong answers only" mode the pool is the user's wrong-answered questions.
-    const pool: Question[] = wrongOnly ? (wrongQuestions ?? []) : (allQuestions ?? []);
+    // can only ask as many as exist, so we surface this to the user.
+    const pool: Question[] =
+      poolMode === "wrong"
+        ? (wrongQuestions ?? [])
+        : poolMode === "weak"
+          ? (weakQuestions ?? [])
+          : (allQuestions ?? []);
     const available = pool.filter((q: Question) => {
       if (domain !== "all" && q.domain !== domain) return false;
       if (difficulty !== "all" && q.difficulty !== difficulty) return false;
@@ -216,7 +234,10 @@ export default function Quiz() {
     const requested = parseInt(questionCount);
     const willAsk = Math.min(requested, available);
     const isCapped = available > 0 && requested > available;
-    const poolLoading = wrongOnly ? loadingWrong : loadingQuestions;
+    const poolLoading =
+      poolMode === "wrong" ? loadingWrong : poolMode === "weak" ? loadingWeak : loadingQuestions;
+    const poolLabel =
+      poolMode === "wrong" ? "wrong-answer" : poolMode === "weak" ? "exam-trap" : "";
 
     return (
       <div className="max-w-xl mx-auto fade-in">
@@ -229,47 +250,47 @@ export default function Quiz() {
 
         <Card>
           <CardContent className="pt-6 space-y-5">
-            {/* Wrong answers only toggle */}
-            <button
-              type="button"
-              data-testid="toggle-wrong-only"
-              onClick={() => setWrongOnly((v) => !v)}
-              className={cn(
-                "w-full flex items-center justify-between gap-3 p-3.5 rounded-lg border text-left transition-colors min-h-[44px]",
-                wrongOnly
-                  ? "border-red-500/50 bg-red-500/10"
-                  : "border-border bg-secondary/30 hover:bg-secondary",
-              )}
-            >
-              <div className="flex items-center gap-2.5">
-                <XCircle
-                  className={cn(
-                    "w-4 h-4 shrink-0",
-                    wrongOnly ? "text-red-400" : "text-muted-foreground",
-                  )}
-                />
-                <div>
-                  <p className="text-sm font-medium">Wrong answers only</p>
-                  <p className="text-xs text-muted-foreground">
-                    Drill the questions you've gotten wrong before
-                    {!loadingWrong && ` (${(wrongQuestions ?? []).length} available)`}
-                  </p>
-                </div>
+            {/* Question pool mode */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Practice with</label>
+              <div className="grid grid-cols-3 gap-2">
+                {(
+                  [
+                    { key: "all", label: "All questions", count: (allQuestions ?? []).length },
+                    { key: "weak", label: "Exam traps", count: (weakQuestions ?? []).length },
+                    { key: "wrong", label: "My wrong", count: (wrongQuestions ?? []).length },
+                  ] as const
+                ).map((m) => (
+                  <button
+                    key={m.key}
+                    type="button"
+                    data-testid={`pool-${m.key}`}
+                    onClick={() => setPoolMode(m.key)}
+                    className={cn(
+                      "flex flex-col items-center justify-center gap-0.5 p-2.5 rounded-lg border text-center transition-colors min-h-[56px] active:scale-[0.98]",
+                      poolMode === m.key
+                        ? "border-primary bg-primary/10 text-foreground"
+                        : "border-border bg-secondary/30 hover:bg-secondary text-muted-foreground",
+                    )}
+                  >
+                    <span className="text-xs font-medium leading-tight">{m.label}</span>
+                    <span className="text-[10px] opacity-70">{m.count}</span>
+                  </button>
+                ))}
               </div>
-              <span
-                className={cn(
-                  "relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors",
-                  wrongOnly ? "bg-red-500" : "bg-secondary border border-border",
-                )}
-              >
-                <span
-                  className={cn(
-                    "absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform",
-                    wrongOnly ? "translate-x-[18px]" : "translate-x-0.5",
-                  )}
-                />
-              </span>
-            </button>
+              {poolMode === "weak" && (
+                <p className="text-xs text-muted-foreground">
+                  Curated high-value topics that are easy to miss: model router, monitoring tools,
+                  MCP, platform selection, voice, prebuilt-agent features, testing &amp; tuning.
+                </p>
+              )}
+              {poolMode === "wrong" && (
+                <p className="text-xs text-muted-foreground">
+                  Questions you've answered incorrectly in the app. They drop off as you get them
+                  right.
+                </p>
+              )}
+            </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Domain</label>
@@ -320,12 +341,12 @@ export default function Quiz() {
                   className={`text-xs ${isCapped ? "text-amber-400" : "text-muted-foreground"}`}
                 >
                   {available === 0
-                    ? wrongOnly
+                    ? poolMode === "wrong"
                       ? "No wrong answers to review with this filter. Great job!"
                       : "No questions match this filter."
                     : isCapped
-                      ? `Only ${available} ${wrongOnly ? "wrong-answer" : ""} question${available !== 1 ? "s" : ""} match this filter — the quiz will ask all ${available}.`
-                      : `${available} ${wrongOnly ? "wrong-answer " : ""}question${available !== 1 ? "s" : ""} available with this filter.`}
+                      ? `Only ${available} ${poolLabel} question${available !== 1 ? "s" : ""} match this filter — the quiz will ask all ${available}.`
+                      : `${available} ${poolLabel ? poolLabel + " " : ""}question${available !== 1 ? "s" : ""} available with this filter.`}
                 </p>
               )}
             </div>
@@ -339,10 +360,10 @@ export default function Quiz() {
               {poolLoading
                 ? "Loading questions..."
                 : available === 0
-                  ? wrongOnly
+                  ? poolMode === "wrong"
                     ? "No wrong answers to review"
                     : "No questions available"
-                  : `Begin ${wrongOnly ? "Review" : "Quiz"} (${willAsk} question${willAsk !== 1 ? "s" : ""})`}
+                  : `Begin ${poolMode === "all" ? "Quiz" : "Review"} (${willAsk} question${willAsk !== 1 ? "s" : ""})`}
             </Button>
           </CardContent>
         </Card>
