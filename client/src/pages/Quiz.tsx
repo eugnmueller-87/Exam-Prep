@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CheckCircle2, XCircle, ChevronRight, SkipForward } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type Question = {
   id: number;
@@ -49,6 +50,7 @@ export default function Quiz() {
   const [domain, setDomain] = useState("all");
   const [difficulty, setDifficulty] = useState("all");
   const [questionCount, setQuestionCount] = useState("10");
+  const [wrongOnly, setWrongOnly] = useState(false);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [sessionId, setSessionId] = useState<number | null>(null);
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -62,6 +64,14 @@ export default function Quiz() {
   const { data: allQuestions, isLoading: loadingQuestions } = useQuery({
     queryKey: ["/api/questions"],
     queryFn: () => apiRequest("GET", "/api/questions"),
+  });
+
+  // Pool of questions the user has most recently answered incorrectly. Used by
+  // the "Wrong answers only" quiz mode so the user can drill exactly what they
+  // keep missing. Returns full questions (with shuffled options).
+  const { data: wrongQuestions, isLoading: loadingWrong } = useQuery<Question[]>({
+    queryKey: ["/api/answers/wrong"],
+    queryFn: () => apiRequest("GET", "/api/answers/wrong"),
   });
 
   const createSession = useMutation({
@@ -89,15 +99,18 @@ export default function Quiz() {
   const isLast = currentIdx === questions.length - 1;
 
   async function startQuiz() {
-    if (!allQuestions || allQuestions.length === 0) return;
-    let qs = [...allQuestions];
+    // Source pool: either the full bank or only questions answered wrong before.
+    const pool = wrongOnly ? (wrongQuestions ?? []) : (allQuestions ?? []);
+    if (pool.length === 0) return;
+
+    let qs = [...pool];
     if (domain !== "all") qs = qs.filter((q: Question) => q.domain === domain);
     if (difficulty !== "all") qs = qs.filter((q: Question) => q.difficulty === difficulty);
     qs = qs.sort(() => Math.random() - 0.5).slice(0, parseInt(questionCount));
     setQuestions(qs);
 
     const session = await createSession.mutateAsync({
-      mode: "quiz",
+      mode: wrongOnly ? "wrong-review" : "quiz",
       domain: domain !== "all" ? domain : null,
       difficulty: difficulty !== "all" ? difficulty : null,
       totalQuestions: qs.length,
@@ -191,9 +204,11 @@ export default function Quiz() {
 
   // Config screen
   if (quizState === "config") {
-    // How many questions actually match the chosen domain + difficulty. The
-    // quiz can only ask as many as exist, so we surface this to the user.
-    const available = (allQuestions ?? []).filter((q: Question) => {
+    // How many questions match the chosen pool + domain + difficulty. The quiz
+    // can only ask as many as exist, so we surface this to the user. In
+    // "wrong answers only" mode the pool is the user's wrong-answered questions.
+    const pool: Question[] = wrongOnly ? (wrongQuestions ?? []) : (allQuestions ?? []);
+    const available = pool.filter((q: Question) => {
       if (domain !== "all" && q.domain !== domain) return false;
       if (difficulty !== "all" && q.difficulty !== difficulty) return false;
       return true;
@@ -201,6 +216,7 @@ export default function Quiz() {
     const requested = parseInt(questionCount);
     const willAsk = Math.min(requested, available);
     const isCapped = available > 0 && requested > available;
+    const poolLoading = wrongOnly ? loadingWrong : loadingQuestions;
 
     return (
       <div className="max-w-xl mx-auto fade-in">
@@ -213,6 +229,48 @@ export default function Quiz() {
 
         <Card>
           <CardContent className="pt-6 space-y-5">
+            {/* Wrong answers only toggle */}
+            <button
+              type="button"
+              data-testid="toggle-wrong-only"
+              onClick={() => setWrongOnly((v) => !v)}
+              className={cn(
+                "w-full flex items-center justify-between gap-3 p-3.5 rounded-lg border text-left transition-colors min-h-[44px]",
+                wrongOnly
+                  ? "border-red-500/50 bg-red-500/10"
+                  : "border-border bg-secondary/30 hover:bg-secondary",
+              )}
+            >
+              <div className="flex items-center gap-2.5">
+                <XCircle
+                  className={cn(
+                    "w-4 h-4 shrink-0",
+                    wrongOnly ? "text-red-400" : "text-muted-foreground",
+                  )}
+                />
+                <div>
+                  <p className="text-sm font-medium">Wrong answers only</p>
+                  <p className="text-xs text-muted-foreground">
+                    Drill the questions you've gotten wrong before
+                    {!loadingWrong && ` (${(wrongQuestions ?? []).length} available)`}
+                  </p>
+                </div>
+              </div>
+              <span
+                className={cn(
+                  "relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors",
+                  wrongOnly ? "bg-red-500" : "bg-secondary border border-border",
+                )}
+              >
+                <span
+                  className={cn(
+                    "absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform",
+                    wrongOnly ? "translate-x-[18px]" : "translate-x-0.5",
+                  )}
+                />
+              </span>
+            </button>
+
             <div className="space-y-2">
               <label className="text-sm font-medium">Domain</label>
               <Select value={domain} onValueChange={setDomain}>
@@ -256,16 +314,18 @@ export default function Quiz() {
                   <SelectItem value="20">20 questions (full)</SelectItem>
                 </SelectContent>
               </Select>
-              {!loadingQuestions && (
+              {!poolLoading && (
                 <p
                   data-testid="available-count"
                   className={`text-xs ${isCapped ? "text-amber-400" : "text-muted-foreground"}`}
                 >
                   {available === 0
-                    ? "No questions match this filter."
+                    ? wrongOnly
+                      ? "No wrong answers to review with this filter. Great job!"
+                      : "No questions match this filter."
                     : isCapped
-                      ? `Only ${available} questions match this filter — the quiz will ask all ${available}.`
-                      : `${available} questions available with this filter.`}
+                      ? `Only ${available} ${wrongOnly ? "wrong-answer" : ""} question${available !== 1 ? "s" : ""} match this filter — the quiz will ask all ${available}.`
+                      : `${available} ${wrongOnly ? "wrong-answer " : ""}question${available !== 1 ? "s" : ""} available with this filter.`}
                 </p>
               )}
             </div>
@@ -274,13 +334,15 @@ export default function Quiz() {
               data-testid="btn-begin-quiz"
               className="w-full mt-2"
               onClick={startQuiz}
-              disabled={createSession.isPending || loadingQuestions || available === 0}
+              disabled={createSession.isPending || poolLoading || available === 0}
             >
-              {loadingQuestions
+              {poolLoading
                 ? "Loading questions..."
                 : available === 0
-                  ? "No questions available"
-                  : `Begin Quiz (${willAsk} question${willAsk !== 1 ? "s" : ""})`}
+                  ? wrongOnly
+                    ? "No wrong answers to review"
+                    : "No questions available"
+                  : `Begin ${wrongOnly ? "Review" : "Quiz"} (${willAsk} question${willAsk !== 1 ? "s" : ""})`}
             </Button>
           </CardContent>
         </Card>

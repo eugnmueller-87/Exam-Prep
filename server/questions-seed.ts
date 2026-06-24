@@ -4037,4 +4037,142 @@ export const questionBank: InsertQuestion[] = [
     explanation:
       "The similarity test method evaluates whether a response is semantically equivalent to the expected answer, suitable when wording varies but meaning is correct. Text match requires exact output, regression testing checks for changes over time, and quality tests assess response characteristics rather than semantic equivalence to an expected answer.",
   },
+
+  // ── Batch 4: additional AB-100 practice-mock questions ──
+  {
+    domain: "plan",
+    topic: "Review Grounding Data",
+    subtopic: "Externalized search index",
+    difficulty: "hard",
+    question:
+      "A customer support solution uses RAG over Dynamics 365, SharePoint Online, and Azure SQL. Retrieval data has duplicates and outdated pricing; pricing changes must reflect within two hours. You must improve accuracy and reduce token usage and latency from noisy retrieval, without adding load to the source systems. What data-grounding approach should you recommend?",
+    options: JSON.stringify([
+      "Externalize the grounding data into a search index, preprocess to normalize and deduplicate content, generate embeddings for retrieval, and refresh the index on a schedule that meets the two-hour freshness requirement.",
+      "Fine-tune the model on the combined source data.",
+      "Query the source systems directly at inference time for the freshest data.",
+      "Add prompt instructions telling the model to ignore duplicate and outdated content.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Preprocessing and deduplicating grounding data during ingestion makes retrieval accurate, clean, and relevant, while scheduled index refreshes meet freshness without querying source systems at inference time. Fine-tuning does not address frequently changing data, inference-time queries add load and latency, and prompt-only approaches cannot reliably correct duplicate or outdated grounding data.",
+  },
+  {
+    domain: "plan",
+    topic: "Evaluate Costs and Benefits",
+    subtopic: "Balanced routing at peak",
+    difficulty: "medium",
+    question:
+      "A Microsoft Foundry customer-service agent handles mostly simple order-status questions plus complex refund and escalation requests. You must reduce TCO while maintaining response quality for complex requests and supporting peak demand, using Data Zone Standard deployments. What should you do?",
+    options: JSON.stringify([
+      "Deploy a model router that has routing mode set to Balanced.",
+      "Deploy separate model endpoints and implement custom client-side routing.",
+      "Deploy a single large model for all requests.",
+      "Use global deployments to absorb peak demand.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Balanced routing sends simple requests to lower-cost models while reserving higher-capability models for complex prompts, reducing cost without sacrificing quality and staying within the data zone boundary. A single large model, global deployments, and custom client-side routing increase cost and operational complexity.",
+  },
+  {
+    domain: "design",
+    topic: "Design Task Agents",
+    subtopic: "Foundry Agent Service",
+    difficulty: "medium",
+    question:
+      "A company uses Dynamics 365 Customer Service with Copilot. You must add autonomous agents that retrieve approved knowledge and invoke tools for limited-service actions. The solution must support centralized governance and monitoring in Azure and enable both no-code and code-first development with GitHub-based workflows, without managing infrastructure. Which platform should you use?",
+    options: JSON.stringify([
+      "Microsoft Foundry Agent Service.",
+      "Microsoft Copilot Studio alone.",
+      "Azure Machine Learning.",
+      "The Microsoft 365 Agents SDK alone.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Foundry Agent Service provides fully managed agent hosting in Azure with built-in governance, monitoring, RBAC, and both no-code and code-first workflows. Copilot Studio alone does not meet advanced code-first and centralized hosting needs, Azure ML requires managing infrastructure, and the Microsoft 365 Agents SDK alone is not a managed agent platform.",
+  },
+  {
+    domain: "design",
+    topic: "Design Prompt Actions",
+    subtopic: "Nonblocking agent calls",
+    difficulty: "hard",
+    question:
+      "A Dynamics 365 model-driven app used by supervisors has a custom PCF control that calls a Copilot Studio agent to generate per-case recommendations. Agent responses can be inaccurate and must NOT update Dataverse automatically, and supervisors must use the form even if the agent call fails. How should you design it so agent calls do not block form usage and recommendations are shown only for review?",
+    options: JSON.stringify([
+      "Include asynchronous agent calls with retry and timeout handling and a nonblocking fallback experience.",
+      "Block form rendering until the agent response is received.",
+      "Write the agent's recommendations directly to Dataverse on the form.",
+      "Use synchronous agent calls with optimistic concurrency.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Asynchronous calls with retry and timeout keep the form responsive and usable even when the agent service is unavailable, while showing AI recommendations only for review. Blocking rendering harms usability, writing to Dataverse violates the human-review requirement, and synchronous calls still create a blocking, failure-prone experience.",
+  },
+  {
+    domain: "design",
+    topic: "Orchestrate Prebuilt Agents",
+    subtopic: "Copilot for Service Outlook sync",
+    difficulty: "medium",
+    question:
+      "A company uses Dynamics 365 Customer Service as its CRM and deploys Microsoft 365 Copilot for Service to reps using Teams and Outlook. Users can open the Copilot for Service app in Outlook, but saving emails and appointments to Dynamics 365 fails for most users. What should you do to configure the CRM environment to support saving Outlook emails and appointments?",
+    options: JSON.stringify([
+      "Turn on server-side synchronization with Microsoft Exchange Online and approve and test user mailboxes.",
+      "Enable the Salesforce connector in the environment data loss prevention (DLP) policy.",
+      "Install and pin the Copilot for Service app in Microsoft Teams.",
+      "Adjust meeting transcription settings in Microsoft Teams.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Server-side synchronization with Exchange Online is required for Dynamics 365 to track and save Outlook emails and appointments, and approving/testing user mailboxes ensures proper configuration. A Salesforce connector is unrelated, Teams app installation does not enable mail/calendar sync, and Teams transcription settings are unrelated to Outlook tracking.",
+  },
+  {
+    domain: "design",
+    topic: "Orchestrate Prebuilt Agents",
+    subtopic: "Task recorder guidance",
+    difficulty: "medium",
+    question:
+      "A company uses Dynamics 365 Finance and Supply Chain Management. You must provide step-by-step, interactive in-app guidance that is contextual to the current page and user task. Which feature should you use?",
+    options: JSON.stringify([
+      "Task guides created by using Task recorder.",
+      "Custom help panes with static content.",
+      "Power BI reports embedded in the app.",
+      "A Microsoft Teams channel with links to Dynamics 365 documentation.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Task guides created with Task recorder provide step-by-step, interactive, in-app guidance contextual to the user's current page and workflow. Custom help panes are static, Power BI reports are for analytics, and a Teams channel with documentation links is external and not contextual or interactive within the app.",
+  },
+  {
+    domain: "design",
+    topic: "Orchestrate Prebuilt Agents",
+    subtopic: "Copilot for Service in Teams/Outlook",
+    difficulty: "medium",
+    question:
+      "A company uses Dynamics 365 Customer Service, Teams, and Outlook; reps work primarily in Teams and Outlook. You must enable AI features so reps can view AI-generated case summaries in Outlook and Teams and use natural language prompts in Teams to retrieve case data and related knowledge. What should you do?",
+    options: JSON.stringify([
+      "Configure Microsoft 365 Copilot for Service features, including case summaries in Outlook and Teams and chat with service data in Teams.",
+      "Limit Copilot usage to the Dynamics 365 Customer Service web app only.",
+      "Configure Microsoft 365 Copilot for Sales features.",
+      "Build a custom Copilot Studio agent for each rep.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Microsoft 365 Copilot for Service surfaces AI-generated case summaries in Outlook and Teams and enables natural language interaction with service data in Teams. Limiting to the Dynamics web app, using Copilot for Sales, or building per-rep custom agents do not meet the requirements.",
+  },
+  {
+    domain: "deploy",
+    topic: "Monitor Agents",
+    subtopic: "Agent details view (cost)",
+    difficulty: "medium",
+    question:
+      "Two customer-support agents — one in Copilot Studio for Teams, one in Azure AI Foundry — send telemetry to the same Application Insights resource. During peak hours users report slow responses, increased failures, and higher costs. You need a monitoring experience in Azure Monitor to analyze agent runs, token usage, costs, and errors across both agents. Which Azure Monitor experience should you use?",
+    options: JSON.stringify([
+      "The Agent details view.",
+      "Metrics Explorer.",
+      "The Application map.",
+      "Live metrics.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "The Agent details view surfaces execution runs, latency, token usage, cost signals, and errors across multiple agents in one place. Metrics Explorer shows raw metrics without agent-level run or cost insight, the Application map visualizes service dependencies, and Live metrics shows real-time request/failure rates but not agent runs, token usage, or cost.",
+  },
 ];
