@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -11,8 +11,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CheckCircle2, XCircle, ChevronRight, SkipForward } from "lucide-react";
+import { CheckCircle2, XCircle, ChevronRight, SkipForward, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+const SECONDS_PER_QUESTION = 120; // 2 minutes, matching the real exam pace
 
 type Question = {
   id: number;
@@ -57,6 +59,7 @@ export default function Quiz() {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [revealed, setRevealed] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(SECONDS_PER_QUESTION);
   const [answers, setAnswers] = useState<
     { questionId: number; selected: number | null; correct: boolean; timeMs: number }[]
   >([]);
@@ -115,6 +118,28 @@ export default function Quiz() {
   const options: string[] = currentQuestion ? JSON.parse(currentQuestion.options) : [];
   const isLast = currentIdx === questions.length - 1;
 
+  // Per-question 2-minute countdown, mirroring the real exam pace. Resets to
+  // SECONDS_PER_QUESTION whenever a new question is shown. While the question is
+  // unanswered it ticks down every second; reaching 0 auto-reveals the answer
+  // (time's up). The timer freezes once the answer is revealed.
+  useEffect(() => {
+    if (quizState !== "active") return;
+    setSecondsLeft(SECONDS_PER_QUESTION);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentIdx, quizState]);
+
+  useEffect(() => {
+    if (quizState !== "active" || revealed) return;
+    if (secondsLeft <= 0) {
+      // Time's up — reveal whatever is (or isn't) selected.
+      handleReveal(true);
+      return;
+    }
+    const id = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [secondsLeft, revealed, quizState]);
+
   async function startQuiz() {
     // Source pool: full bank, previously-wrong, or curated exam-trap topics.
     const pool =
@@ -162,11 +187,14 @@ export default function Quiz() {
     setSelectedAnswer(idx);
   }
 
-  async function handleReveal() {
-    if (selectedAnswer === null) return;
+  async function handleReveal(timedOut = false) {
+    // Normally requires a selection; on time-out we reveal with no selection
+    // (recorded as incorrect). Guard against double-reveal.
+    if (revealed) return;
+    if (selectedAnswer === null && !timedOut) return;
     setRevealed(true);
     const timeMs = Date.now() - questionStartTime.current;
-    const isCorrect = selectedAnswer === currentQuestion.correctIndex;
+    const isCorrect = selectedAnswer !== null && selectedAnswer === currentQuestion.correctIndex;
     const answerEntry = {
       questionId: currentQuestion.id,
       selected: selectedAnswer,
@@ -409,15 +437,50 @@ export default function Quiz() {
     <div className="max-w-2xl mx-auto fade-in">
       {/* Progress header */}
       <div className="mb-5">
-        <div className="flex items-center justify-between mb-2 text-sm text-muted-foreground">
+        <div className="flex items-center justify-between mb-2 text-sm text-muted-foreground gap-3">
           <span>
             Question {currentIdx + 1} of {questions.length}
           </span>
-          <span>{answeredCorrect} correct so far</span>
+          <div className="flex items-center gap-3">
+            <span className="hidden sm:inline">{answeredCorrect} correct so far</span>
+            <span
+              data-testid="question-timer"
+              className={cn(
+                "inline-flex items-center gap-1 font-mono font-semibold tabular-nums px-2 py-0.5 rounded-md",
+                revealed
+                  ? "text-muted-foreground bg-secondary/50"
+                  : secondsLeft <= 30
+                    ? "text-red-400 bg-red-500/10"
+                    : secondsLeft <= 60
+                      ? "text-amber-400 bg-amber-500/10"
+                      : "text-foreground bg-secondary",
+              )}
+            >
+              <Clock className="w-3.5 h-3.5" />
+              {Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, "0")}
+            </span>
+          </div>
         </div>
-        <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
+        {/* Time bar (drains over 2 min) */}
+        <div className="h-1.5 bg-secondary rounded-full overflow-hidden mb-1.5">
           <div
-            className="h-full bg-primary rounded-full transition-all duration-500"
+            className={cn(
+              "h-full rounded-full transition-all duration-1000 ease-linear",
+              revealed
+                ? "bg-muted-foreground/40"
+                : secondsLeft <= 30
+                  ? "bg-red-500"
+                  : secondsLeft <= 60
+                    ? "bg-amber-500"
+                    : "bg-primary",
+            )}
+            style={{ width: `${(secondsLeft / SECONDS_PER_QUESTION) * 100}%` }}
+          />
+        </div>
+        {/* Question progress */}
+        <div className="h-1 bg-secondary/60 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-primary/50 rounded-full transition-all duration-500"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -526,7 +589,7 @@ export default function Quiz() {
           <Button
             size="lg"
             data-testid="btn-check-answer"
-            onClick={handleReveal}
+            onClick={() => handleReveal()}
             disabled={selectedAnswer === null}
             className="w-full sm:w-auto"
           >
