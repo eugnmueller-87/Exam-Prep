@@ -9,9 +9,8 @@ A full-stack practice app for the **Microsoft AB-100 — Agentic AI Business Sol
 ![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38B2AC?logo=tailwindcss&logoColor=white)
-[![Deployed on Railway](https://img.shields.io/badge/deployed-Railway-0B0D0E?logo=railway&logoColor=white)](https://exam-prep-production-c476.up.railway.app)
 
-**🔗 Live demo: [exam-prep-production-c476.up.railway.app](https://exam-prep-production-c476.up.railway.app)** — works on desktop, iPad, and mobile.
+> Runs locally or deploy your own instance — see [DEPLOY.md](DEPLOY.md).
 
 ![AB-100 Exam Prep dashboard](Screenshots/dashboard.png)
 
