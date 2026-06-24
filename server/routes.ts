@@ -103,6 +103,13 @@ export async function registerRoutes(server: Server, app: Express) {
     res.json({ count: storage.getQuestionCount() });
   });
 
+  // GET /api/questions/seen-ids - IDs of questions already answered at least
+  // once. Used by the quiz to prioritize never-seen questions. (Declared before
+  // /:id so "seen-ids" is not parsed as an id.)
+  app.get("/api/questions/seen-ids", (req, res) => {
+    res.json(storage.getSeenQuestionIds());
+  });
+
   // GET /api/questions/:id - get single question
   app.get("/api/questions/:id", (req, res) => {
     const q = storage.getQuestion(parseInt(req.params.id));

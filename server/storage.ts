@@ -151,6 +151,7 @@ export interface IStorage {
 
   // Stats
   getQuestionStats(questionId: number): QuestionStat | undefined;
+  getSeenQuestionIds(): number[];
   upsertQuestionStats(questionId: number, correct: boolean, timeMs: number): void;
   getWeakTopics(): { topic: string; domain: string; accuracy: number; attempted: number }[];
   getOverallStats(): {
@@ -324,6 +325,16 @@ export class Storage implements IStorage {
       .prepare("SELECT * FROM question_stats WHERE question_id = ?")
       .get(questionId) as any;
     return r ? mapQuestionStat(r) : undefined;
+  }
+
+  // IDs of every question the user has already answered at least once (a
+  // question_stats row exists). Used to prioritize never-seen questions when
+  // starting a quiz, so the user works through the whole bank before repeating.
+  getSeenQuestionIds(): number[] {
+    const rows = sqlite.prepare("SELECT question_id FROM question_stats").all() as {
+      question_id: number;
+    }[];
+    return rows.map((r) => r.question_id);
   }
 
   upsertQuestionStats(questionId: number, correct: boolean, timeMs: number): void {

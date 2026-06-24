@@ -83,6 +83,13 @@ export default function Quiz() {
     queryFn: () => apiRequest("GET", "/api/questions?weak=true"),
   });
 
+  // IDs of questions already answered at least once. Used to serve never-seen
+  // questions first so the user works through the entire bank before repeating.
+  const { data: seenIds } = useQuery<number[]>({
+    queryKey: ["/api/questions/seen-ids"],
+    queryFn: () => apiRequest("GET", "/api/questions/seen-ids"),
+  });
+
   const createSession = useMutation({
     mutationFn: (data: any) => apiRequest("POST", "/api/sessions", data),
   });
@@ -100,6 +107,7 @@ export default function Quiz() {
       queryClient.invalidateQueries({ queryKey: ["/api/stats/weak-topics"] });
       queryClient.invalidateQueries({ queryKey: ["/api/sessions/recent"] });
       queryClient.invalidateQueries({ queryKey: ["/api/answers/wrong"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/questions/seen-ids"] });
     },
   });
 
@@ -120,7 +128,16 @@ export default function Quiz() {
     let qs = [...pool];
     if (domain !== "all") qs = qs.filter((q: Question) => q.domain === domain);
     if (difficulty !== "all") qs = qs.filter((q: Question) => q.difficulty === difficulty);
-    qs = qs.sort(() => Math.random() - 0.5).slice(0, parseInt(questionCount));
+
+    // Prioritize never-seen questions so the user works through the whole bank
+    // before repeating. Shuffle first (random within each group), then put
+    // unseen questions ahead of seen ones, and finally slice to the count. Once
+    // every question has been seen, this is just a normal random selection.
+    const seen = new Set(seenIds ?? []);
+    qs = qs.sort(() => Math.random() - 0.5);
+    const unseen = qs.filter((q: Question) => !seen.has(q.id));
+    const alreadySeen = qs.filter((q: Question) => seen.has(q.id));
+    qs = [...unseen, ...alreadySeen].slice(0, parseInt(questionCount));
     setQuestions(qs);
 
     const session = await createSession.mutateAsync({
@@ -226,11 +243,16 @@ export default function Quiz() {
         : poolMode === "weak"
           ? (weakQuestions ?? [])
           : (allQuestions ?? []);
-    const available = pool.filter((q: Question) => {
+    const matching = pool.filter((q: Question) => {
       if (domain !== "all" && q.domain !== domain) return false;
       if (difficulty !== "all" && q.difficulty !== difficulty) return false;
       return true;
-    }).length;
+    });
+    const available = matching.length;
+    // How many of the matching questions the user has not seen yet — these are
+    // served first, so the user knows progress toward covering the whole pool.
+    const seenSet = new Set(seenIds ?? []);
+    const unseenCount = matching.filter((q: Question) => !seenSet.has(q.id)).length;
     const requested = parseInt(questionCount);
     const willAsk = Math.min(requested, available);
     const isCapped = available > 0 && requested > available;
@@ -347,6 +369,13 @@ export default function Quiz() {
                     : isCapped
                       ? `Only ${available} ${poolLabel} question${available !== 1 ? "s" : ""} match this filter — the quiz will ask all ${available}.`
                       : `${available} ${poolLabel ? poolLabel + " " : ""}question${available !== 1 ? "s" : ""} available with this filter.`}
+                </p>
+              )}
+              {!poolLoading && available > 0 && (
+                <p className="text-xs text-primary" data-testid="unseen-count">
+                  {unseenCount > 0
+                    ? `New questions get priority — ${unseenCount} not seen yet.`
+                    : "✓ You've seen every question in this set — now reviewing at random."}
                 </p>
               )}
             </div>
