@@ -76,7 +76,7 @@ trial, so your quiz history survives restarts. Config files: `railway.json`,
 
 **Auto-deploy:** every push to `main` redeploys automatically.
 
-> Without the optional volume, the SQLite file is ephemeral: the 172-question
+> Without the optional volume, the SQLite file is ephemeral: the 227-question
 > bank always re-seeds on startup (quiz works fine), but personal score history
 > resets when the container restarts.
 
