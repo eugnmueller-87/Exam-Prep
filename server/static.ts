@@ -11,10 +11,26 @@ export function serveStatic(app: Express) {
     );
   }
 
-  app.use(express.static(distPath));
+  // Serve hashed assets (JS/CSS) with long-lived immutable caching — their
+  // filenames change on every build, so they're safe to cache forever. But do
+  // NOT cache index.html: it must always be re-fetched so the browser picks up
+  // the latest asset hashes after a deploy (otherwise stale UI is served).
+  app.use(
+    express.static(distPath, {
+      setHeaders: (res, filePath) => {
+        if (filePath.endsWith("index.html")) {
+          res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        } else if (filePath.includes(`${path.sep}assets${path.sep}`)) {
+          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+        }
+      },
+    }),
+  );
 
-  // fall through to index.html if the file doesn't exist
+  // Fall through to index.html for client-side routes — also no-cache so a
+  // freshly deployed build is always loaded.
   app.use("/{*path}", (_req, res) => {
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 }
