@@ -339,19 +339,20 @@ export class Storage implements IStorage {
     return rows.map((r) => r.id);
   }
 
-  // "Bottleneck" set: questions the user repeatedly struggles with — answered
-  // incorrectly 2+ times total — and NOT yet re-learned, where re-learned means
-  // the two most recent answers were both correct (2 correct in a row). Computed
-  // from the full answers history.
+  // "Bottleneck" set: questions the user has missed — answered incorrectly at
+  // least once — and NOT yet re-learned, where re-learned means the two most
+  // recent answers were both correct (2 correct in a row). Computed from the
+  // full answers history, so a question enters the moment it's first missed and
+  // leaves only after it's answered correctly twice consecutively.
   getBottleneckQuestionIds(): number[] {
-    // Wrong 2+ times total.
+    // Missed at least once.
     const struggled = sqlite
       .prepare(
         `SELECT question_id
          FROM answers
          WHERE is_correct = 0
          GROUP BY question_id
-         HAVING COUNT(*) >= 2`,
+         HAVING COUNT(*) >= 1`,
       )
       .all() as { question_id: number }[];
 

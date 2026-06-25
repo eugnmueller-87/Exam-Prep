@@ -79,7 +79,7 @@ export default function Quiz() {
     queryFn: () => apiRequest("GET", "/api/questions/grind"),
   });
 
-  // "Bottleneck" pool — questions answered wrong 2+ times and not yet re-learned
+  // "Bottleneck" pool — questions missed at least once and not yet re-learned
   // (2 correct in a row). Your hardest questions; they leave automatically once
   // you answer them correctly twice consecutively.
   const { data: bottleneckQuestions, isLoading: loadingBottleneck } = useQuery<Question[]>({
@@ -388,8 +388,8 @@ export default function Quiz() {
               )}
               {poolMode === "bottleneck" && (
                 <p className="text-xs text-red-400">
-                  Your toughest questions — missed 2+ times. They leave automatically once you
-                  answer them correctly twice in a row.
+                  Questions you've missed. A question enters here the moment you get it wrong, and
+                  leaves once you answer it correctly twice in a row.
                 </p>
               )}
             </div>
