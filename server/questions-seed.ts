@@ -4209,4 +4209,38 @@ export const questionBank: InsertQuestion[] = [
     explanation:
       "SharePoint knowledge sources keep responses grounded in tenant-controlled content with permission trimming, and disabling web-based knowledge sources prevents prompts and conversation context from being sent to global services — meeting the regional compliance requirements. Public website sources do not enforce SharePoint access controls, enabling web search violates the requirements, and Bing Custom Search still routes queries through external global search infrastructure.",
   },
+  {
+    domain: "design",
+    topic: "Design AI and Agents",
+    subtopic: "Managed RAG architecture",
+    difficulty: "medium",
+    question:
+      "A company uses Dynamics 365 Customer Service with a Copilot experience during live chats. Policy and troubleshooting content is stored as unstructured documents in Azure Blob Storage, and agents must search across thousands of documents. You need a RAG solution that supports semantic search, grounds responses in the latest relevant content, and runs on managed Azure services within a single Azure region. Which combination of services should you recommend?",
+    options: JSON.stringify([
+      "Azure OpenAI and Azure AI Search.",
+      "Azure AI Services with Azure Blob Storage and custom embeddings.",
+      "Azure Cosmos DB with vector search.",
+      "Copilot Studio grounding without a separate retrieval engine.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Azure AI Search provides scalable semantic and vector-based retrieval over large collections of unstructured documents, and Azure OpenAI generates grounded responses from the retrieved content — the standard managed RAG architecture on Azure, supporting single-region deployment. Cosmos DB vector search lacks semantic ranking and large-scale document indexing, Copilot Studio grounding does not replace a full retrieval engine, and AI Services with Blob Storage + custom embeddings lacks a managed search layer for semantic retrieval.",
+  },
+  {
+    domain: "deploy",
+    topic: "Interpret Telemetry",
+    subtopic: "Sampling and retention",
+    difficulty: "medium",
+    question:
+      "A customer service agent calls an Azure OpenAI model and sends traces to Azure Monitor Application Insights. After a release, average latency and monitoring costs increased; telemetry shows higher token usage per request and a large increase in ingested trace data. You need to reduce monitoring costs while retaining enough telemetry to analyze token usage and latency trends. What should you do?",
+    options: JSON.stringify([
+      "Configure sampling and retention policies in Application Insights.",
+      "Disable Application Insights telemetry for the agent.",
+      "Increase the Application Insights data cap and keep all traces.",
+      "Move all telemetry to a storage account and stop using Application Insights.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Sampling reduces telemetry ingestion volume and cost while preserving statistically representative data, and retention policies control how long data is kept — together cutting cost while keeping enough telemetry to analyze token-usage and latency trends. Disabling telemetry removes visibility, raising the data cap increases cost, and moving everything to storage loses Application Insights' query and analysis capabilities.",
+  },
 ];
