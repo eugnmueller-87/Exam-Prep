@@ -4175,4 +4175,38 @@ export const questionBank: InsertQuestion[] = [
     explanation:
       "The Agent details view surfaces execution runs, latency, token usage, cost signals, and errors across multiple agents in one place. Metrics Explorer shows raw metrics without agent-level run or cost insight, the Application map visualizes service dependencies, and Live metrics shows real-time request/failure rates but not agent runs, token usage, or cost.",
   },
+  {
+    domain: "design",
+    topic: "Design Agents and Flows",
+    subtopic: "Agent flows for deterministic steps",
+    difficulty: "hard",
+    question:
+      "A company uses a Copilot Studio agent in Microsoft Teams to create and update refund cases in Dataverse and then run a legacy refund process on Azure virtual machines. Credentials for the legacy system are stored in Azure Key Vault. Refund execution must run as a predefined sequence of steps, support high concurrency and large payloads, and be monitored independently from the conversation. Which integration pattern should you use?",
+    options: JSON.stringify([
+      "Agent flows for the refund execution.",
+      "HTTP requests from Copilot Studio conversation nodes.",
+      "Microsoft Bot Framework skills registered in Copilot Studio.",
+      "Microsoft Power Platform connectors invoked directly as tools.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "Agent flows run a predefined, deterministic sequence of steps with their own execution, concurrency, and monitoring — decoupled from the conversation — making them ideal for high-volume, large-payload refund processing that must be observed independently. HTTP requests from conversation nodes tie execution to the chat and don't scale for concurrency/large payloads, Bot Framework skills add conversational routing rather than orchestrated back-end steps, and connectors invoked directly as tools run inline in the conversation without independent orchestration or monitoring.",
+  },
+  {
+    domain: "plan",
+    topic: "Design AI Strategy",
+    subtopic: "Regional knowledge compliance",
+    difficulty: "medium",
+    question:
+      "A company plans to deploy a Copilot Studio agent in Microsoft Teams to answer employee policy questions using generative AI. Compliance requires: knowledge retrieval must stay within regional boundaries, and user prompts and conversation context must NOT be sent to global web services. Policy documents are in SharePoint Online across multiple sites. What knowledge source design should you recommend?",
+    options: JSON.stringify([
+      "Add the SharePoint site URLs as SharePoint knowledge sources and disable web-based knowledge sources.",
+      "Add the policy content as public website knowledge sources.",
+      "Enable web search so the agent can supplement answers from the internet.",
+      "Configure Bing Custom Search over the policy sites.",
+    ]),
+    correctIndex: 0,
+    explanation:
+      "SharePoint knowledge sources keep responses grounded in tenant-controlled content with permission trimming, and disabling web-based knowledge sources prevents prompts and conversation context from being sent to global services — meeting the regional compliance requirements. Public website sources do not enforce SharePoint access controls, enabling web search violates the requirements, and Bing Custom Search still routes queries through external global search infrastructure.",
+  },
 ];
