@@ -110,6 +110,24 @@ export async function registerRoutes(server: Server, app: Express) {
     res.json(storage.getSeenQuestionIds());
   });
 
+  // GET /api/questions/grind - full questions not yet answered correctly
+  // (never attempted, or attempted with 0 correct). The "grind everything you
+  // haven't mastered" pool; shrinks as questions are answered correctly.
+  app.get("/api/questions/grind", (req, res) => {
+    const ids = new Set(storage.getGrindQuestionIds());
+    const questions = storage.getQuestions().filter((q) => ids.has(q.id));
+    res.json(questions.map(shuffleOptions));
+  });
+
+  // GET /api/questions/bottleneck - full questions answered wrong 2+ times and
+  // not yet re-learned (2 correct in a row). The "questions I keep struggling
+  // with" pool; questions leave automatically once re-learned.
+  app.get("/api/questions/bottleneck", (req, res) => {
+    const ids = new Set(storage.getBottleneckQuestionIds());
+    const questions = storage.getQuestions().filter((q) => ids.has(q.id));
+    res.json(questions.map(shuffleOptions));
+  });
+
   // GET /api/questions/:id - get single question
   app.get("/api/questions/:id", (req, res) => {
     const q = storage.getQuestion(parseInt(req.params.id));

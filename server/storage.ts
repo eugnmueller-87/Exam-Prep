@@ -148,6 +148,8 @@ export interface IStorage {
   saveAnswer(a: InsertAnswer): Answer;
   getSessionAnswers(sessionId: number): Answer[];
   getWrongAnswers(domain?: string): WrongAnswer[];
+  getGrindQuestionIds(): number[];
+  getBottleneckQuestionIds(): number[];
 
   // Stats
   getQuestionStats(questionId: number): QuestionStat | undefined;
@@ -318,6 +320,53 @@ export class Storage implements IStorage {
       selectedIndex: r.sel ?? null,
       answeredAt: r.answered_at ?? null,
     }));
+  }
+
+  // "Grind" set: every question NOT yet answered correctly — i.e. never
+  // attempted, or attempted but times_correct = 0. Computed live (no data is
+  // mutated), so it shrinks as the user gets questions right. This is the
+  // "mark everything not answered correctly as wrong to grind through" pool.
+  getGrindQuestionIds(): number[] {
+    const rows = sqlite
+      .prepare(
+        `SELECT q.id AS id
+         FROM questions q
+         LEFT JOIN question_stats qs ON qs.question_id = q.id
+         WHERE qs.question_id IS NULL OR qs.times_correct = 0
+         ORDER BY q.id`,
+      )
+      .all() as { id: number }[];
+    return rows.map((r) => r.id);
+  }
+
+  // "Bottleneck" set: questions the user repeatedly struggles with — answered
+  // incorrectly 2+ times total — and NOT yet re-learned, where re-learned means
+  // the two most recent answers were both correct (2 correct in a row). Computed
+  // from the full answers history.
+  getBottleneckQuestionIds(): number[] {
+    // Wrong 2+ times total.
+    const struggled = sqlite
+      .prepare(
+        `SELECT question_id
+         FROM answers
+         WHERE is_correct = 0
+         GROUP BY question_id
+         HAVING COUNT(*) >= 2`,
+      )
+      .all() as { question_id: number }[];
+
+    const result: number[] = [];
+    const lastTwoStmt = sqlite.prepare(
+      `SELECT is_correct FROM answers WHERE question_id = ? ORDER BY id DESC LIMIT 2`,
+    );
+    for (const { question_id } of struggled) {
+      const lastTwo = lastTwoStmt.all(question_id) as { is_correct: number }[];
+      // Promote out of bottleneck only after 2 correct in a row.
+      const learned =
+        lastTwo.length === 2 && lastTwo[0].is_correct === 1 && lastTwo[1].is_correct === 1;
+      if (!learned) result.push(question_id);
+    }
+    return result;
   }
 
   getQuestionStats(questionId: number): QuestionStat | undefined {

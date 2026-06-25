@@ -52,8 +52,9 @@ export default function Quiz() {
   const [domain, setDomain] = useState("all");
   const [difficulty, setDifficulty] = useState("all");
   const [questionCount, setQuestionCount] = useState("10");
-  // Question pool: "all" = full bank, "wrong" = previously-wrong, "weak" = curated exam-trap topics.
-  const [poolMode, setPoolMode] = useState<"all" | "wrong" | "weak">("all");
+  // Question pool: "all" = full bank, "grind" = not-yet-mastered, "bottleneck"
+  // = repeatedly struggled with, "weak" = curated exam-trap topics.
+  const [poolMode, setPoolMode] = useState<"all" | "grind" | "bottleneck" | "weak">("all");
   const [questions, setQuestions] = useState<Question[]>([]);
   const [sessionId, setSessionId] = useState<number | null>(null);
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -70,12 +71,20 @@ export default function Quiz() {
     queryFn: () => apiRequest("GET", "/api/questions"),
   });
 
-  // Pool of questions the user has most recently answered incorrectly. Used by
-  // the "Wrong answers only" quiz mode so the user can drill exactly what they
-  // keep missing. Returns full questions (with shuffled options).
-  const { data: wrongQuestions, isLoading: loadingWrong } = useQuery<Question[]>({
-    queryKey: ["/api/answers/wrong"],
-    queryFn: () => apiRequest("GET", "/api/answers/wrong"),
+  // "Not mastered" grind pool — every question not yet answered correctly
+  // (never attempted, or attempted with 0 correct). Shrinks as you get them
+  // right. This is the "go through everything you haven't nailed" pool.
+  const { data: grindQuestions, isLoading: loadingGrind } = useQuery<Question[]>({
+    queryKey: ["/api/questions/grind"],
+    queryFn: () => apiRequest("GET", "/api/questions/grind"),
+  });
+
+  // "Bottleneck" pool — questions answered wrong 2+ times and not yet re-learned
+  // (2 correct in a row). Your hardest questions; they leave automatically once
+  // you answer them correctly twice consecutively.
+  const { data: bottleneckQuestions, isLoading: loadingBottleneck } = useQuery<Question[]>({
+    queryKey: ["/api/questions/bottleneck"],
+    queryFn: () => apiRequest("GET", "/api/questions/bottleneck"),
   });
 
   // Curated "exam traps" question set — the high-value topics that are easy to
@@ -111,6 +120,8 @@ export default function Quiz() {
       queryClient.invalidateQueries({ queryKey: ["/api/sessions/recent"] });
       queryClient.invalidateQueries({ queryKey: ["/api/answers/wrong"] });
       queryClient.invalidateQueries({ queryKey: ["/api/questions/seen-ids"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/questions/grind"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/questions/bottleneck"] });
     },
   });
 
@@ -141,13 +152,16 @@ export default function Quiz() {
   }, [secondsLeft, revealed, quizState]);
 
   async function startQuiz() {
-    // Source pool: full bank, previously-wrong, or curated exam-trap topics.
+    // Source pool: full bank, not-mastered grind set, bottleneck set, or
+    // curated exam-trap topics.
     const pool =
-      poolMode === "wrong"
-        ? (wrongQuestions ?? [])
-        : poolMode === "weak"
-          ? (weakQuestions ?? [])
-          : (allQuestions ?? []);
+      poolMode === "grind"
+        ? (grindQuestions ?? [])
+        : poolMode === "bottleneck"
+          ? (bottleneckQuestions ?? [])
+          : poolMode === "weak"
+            ? (weakQuestions ?? [])
+            : (allQuestions ?? []);
     if (pool.length === 0) return;
 
     let qs = [...pool];
@@ -166,7 +180,14 @@ export default function Quiz() {
     setQuestions(qs);
 
     const session = await createSession.mutateAsync({
-      mode: poolMode === "wrong" ? "wrong-review" : poolMode === "weak" ? "weak-review" : "quiz",
+      mode:
+        poolMode === "grind"
+          ? "grind"
+          : poolMode === "bottleneck"
+            ? "bottleneck"
+            : poolMode === "weak"
+              ? "weak-review"
+              : "quiz",
       domain: domain !== "all" ? domain : null,
       difficulty: difficulty !== "all" ? difficulty : null,
       totalQuestions: qs.length,
@@ -266,11 +287,13 @@ export default function Quiz() {
     // How many questions match the chosen pool + domain + difficulty. The quiz
     // can only ask as many as exist, so we surface this to the user.
     const pool: Question[] =
-      poolMode === "wrong"
-        ? (wrongQuestions ?? [])
-        : poolMode === "weak"
-          ? (weakQuestions ?? [])
-          : (allQuestions ?? []);
+      poolMode === "grind"
+        ? (grindQuestions ?? [])
+        : poolMode === "bottleneck"
+          ? (bottleneckQuestions ?? [])
+          : poolMode === "weak"
+            ? (weakQuestions ?? [])
+            : (allQuestions ?? []);
     const matching = pool.filter((q: Question) => {
       if (domain !== "all" && q.domain !== domain) return false;
       if (difficulty !== "all" && q.difficulty !== difficulty) return false;
@@ -285,9 +308,21 @@ export default function Quiz() {
     const willAsk = Math.min(requested, available);
     const isCapped = available > 0 && requested > available;
     const poolLoading =
-      poolMode === "wrong" ? loadingWrong : poolMode === "weak" ? loadingWeak : loadingQuestions;
+      poolMode === "grind"
+        ? loadingGrind
+        : poolMode === "bottleneck"
+          ? loadingBottleneck
+          : poolMode === "weak"
+            ? loadingWeak
+            : loadingQuestions;
     const poolLabel =
-      poolMode === "wrong" ? "wrong-answer" : poolMode === "weak" ? "exam-trap" : "";
+      poolMode === "grind"
+        ? "not-mastered"
+        : poolMode === "bottleneck"
+          ? "bottleneck"
+          : poolMode === "weak"
+            ? "exam-trap"
+            : "";
 
     return (
       <div className="max-w-xl mx-auto fade-in">
@@ -303,12 +338,21 @@ export default function Quiz() {
             {/* Question pool mode */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Practice with</label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {(
                   [
                     { key: "all", label: "All questions", count: (allQuestions ?? []).length },
                     { key: "weak", label: "Exam traps", count: (weakQuestions ?? []).length },
-                    { key: "wrong", label: "My wrong", count: (wrongQuestions ?? []).length },
+                    {
+                      key: "grind",
+                      label: "Not mastered",
+                      count: (grindQuestions ?? []).length,
+                    },
+                    {
+                      key: "bottleneck",
+                      label: "Bottleneck",
+                      count: (bottleneckQuestions ?? []).length,
+                    },
                   ] as const
                 ).map((m) => (
                   <button
@@ -319,7 +363,9 @@ export default function Quiz() {
                     className={cn(
                       "flex flex-col items-center justify-center gap-0.5 p-2.5 rounded-lg border text-center transition-colors min-h-[56px] active:scale-[0.98]",
                       poolMode === m.key
-                        ? "border-primary bg-primary/10 text-foreground"
+                        ? m.key === "bottleneck"
+                          ? "border-red-500 bg-red-500/10 text-foreground"
+                          : "border-primary bg-primary/10 text-foreground"
                         : "border-border bg-secondary/30 hover:bg-secondary text-muted-foreground",
                     )}
                   >
@@ -334,10 +380,16 @@ export default function Quiz() {
                   MCP, platform selection, voice, prebuilt-agent features, testing &amp; tuning.
                 </p>
               )}
-              {poolMode === "wrong" && (
+              {poolMode === "grind" && (
                 <p className="text-xs text-muted-foreground">
-                  Questions you've answered incorrectly in the app. They drop off as you get them
-                  right.
+                  Every question you haven't answered correctly yet. Grind through them — each
+                  leaves this pool once you get it right.
+                </p>
+              )}
+              {poolMode === "bottleneck" && (
+                <p className="text-xs text-red-400">
+                  Your toughest questions — missed 2+ times. They leave automatically once you
+                  answer them correctly twice in a row.
                 </p>
               )}
             </div>
@@ -391,9 +443,11 @@ export default function Quiz() {
                   className={`text-xs ${isCapped ? "text-amber-400" : "text-muted-foreground"}`}
                 >
                   {available === 0
-                    ? poolMode === "wrong"
-                      ? "No wrong answers to review with this filter. Great job!"
-                      : "No questions match this filter."
+                    ? poolMode === "grind"
+                      ? "Nothing left to grind with this filter — you've answered them all correctly! 🎉"
+                      : poolMode === "bottleneck"
+                        ? "No bottleneck questions with this filter. Nicely done!"
+                        : "No questions match this filter."
                     : isCapped
                       ? `Only ${available} ${poolLabel} question${available !== 1 ? "s" : ""} match this filter — the quiz will ask all ${available}.`
                       : `${available} ${poolLabel ? poolLabel + " " : ""}question${available !== 1 ? "s" : ""} available with this filter.`}
@@ -417,9 +471,11 @@ export default function Quiz() {
               {poolLoading
                 ? "Loading questions..."
                 : available === 0
-                  ? poolMode === "wrong"
-                    ? "No wrong answers to review"
-                    : "No questions available"
+                  ? poolMode === "grind"
+                    ? "All mastered 🎉"
+                    : poolMode === "bottleneck"
+                      ? "No bottlenecks"
+                      : "No questions available"
                   : `Begin ${poolMode === "all" ? "Quiz" : "Review"} (${willAsk} question${willAsk !== 1 ? "s" : ""})`}
             </Button>
           </CardContent>
